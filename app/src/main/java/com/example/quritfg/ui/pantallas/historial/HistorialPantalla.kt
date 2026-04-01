@@ -13,13 +13,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.quritfg.datos.di.ModuloApp
 import com.example.quritfg.datos.local.GastoEntidad
-import com.example.quritfg.ui.modelo.HistorialMes
 import com.example.quritfg.ui.viewmodels.HistorialViewModel
 import com.example.quritfg.ui.viewmodels.HistorialViewModelFactory
 
-/**
- * Pantalla que muestra el historial de gastos agrupado por mes.
- */
 @Composable
 fun HistorialPantalla(navController: NavController) {
 
@@ -30,7 +26,6 @@ fun HistorialPantalla(navController: NavController) {
         factory = HistorialViewModelFactory(repositorio)
     )
 
-    // Recoge el historial agrupado desde el ViewModel
     val historial by vm.historialAgrupado.collectAsState(
         initial = emptyList()
     )
@@ -38,10 +33,15 @@ fun HistorialPantalla(navController: NavController) {
     if (historial.isEmpty()) {
 
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text("No hay gastos registrados")
+            Text(
+                text = "No hay gastos registrados",
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
 
     } else {
@@ -49,16 +49,21 @@ fun HistorialPantalla(navController: NavController) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
+
+            item {
+                Text(
+                    text = "Historial",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+            }
 
             items(historial) { bloqueMes ->
 
-                // Encabezado del mes
                 EncabezadoMes(bloqueMes.mes)
 
-                // Lista de gastos del mes
                 bloqueMes.gastos.forEach { gasto ->
                     ItemGasto(gasto)
                 }
@@ -67,27 +72,23 @@ fun HistorialPantalla(navController: NavController) {
     }
 }
 
-/**
- * Composable que muestra un gasto individual.
- */
 @Composable
 fun ItemGasto(gasto: GastoEntidad) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp) // 🔥 más profundidad
     ) {
 
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
 
             Text(
                 text = gasto.categoria,
                 style = MaterialTheme.typography.titleMedium
             )
-
-            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = "Cantidad: ${gasto.cantidad}",
@@ -102,15 +103,12 @@ fun ItemGasto(gasto: GastoEntidad) {
     }
 }
 
-/**
- * Encabezado visual para cada mes del historial.
- */
 @Composable
 fun EncabezadoMes(mes: String) {
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surfaceVariant
+        tonalElevation = 2.dp // 🔥 mejor que color fijo
     ) {
 
         Text(

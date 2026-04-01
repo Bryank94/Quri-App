@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -45,21 +47,52 @@ fun InicioPantalla(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        Text("Resumen", style = MaterialTheme.typography.headlineMedium)
 
-        Text("Meta actual: ${meta?.nombre ?: "Sin meta"}")
-        Text("Objetivo: ${resumen.objetivo}")
-
-        Text("Total ingresos: ${resumen.totalIngresos}")
-        Text("Total gastos: ${resumen.totalGastos}")
-        Text("Ahorro actual: ${resumen.ahorroActual}")
-
-        LinearProgressIndicator(
-            progress = resumen.porcentajeProgreso,
-            modifier = Modifier.fillMaxWidth()
+        Text(
+            text = "Resumen",
+            style = MaterialTheme.typography.headlineSmall
         )
+
+        // 🔥 CARD PRINCIPAL (mejora visual clave)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        ) {
+
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+
+                Text(
+                    text = "Meta actual",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Text("Nombre: ${meta?.nombre ?: "Sin meta"}")
+                Text("Objetivo: ${resumen.objetivo}")
+
+                Text("Total ingresos: ${resumen.totalIngresos}")
+                Text("Total gastos: ${resumen.totalGastos}")
+                Text("Ahorro actual: ${resumen.ahorroActual}")
+            }
+        }
+
+        // 🔥 PROGRESO SEPARADO (mejor jerarquía)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
+            Text(
+                text = "Progreso",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            LinearProgressIndicator(
+                progress = resumen.porcentajeProgreso,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }

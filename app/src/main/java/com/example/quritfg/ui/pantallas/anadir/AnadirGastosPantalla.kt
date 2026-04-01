@@ -1,6 +1,7 @@
 package com.example.quritfg.ui.pantallas.anadir
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -9,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -37,8 +39,8 @@ fun AnadirGastoPantalla(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
 
         Text(
@@ -46,7 +48,7 @@ fun AnadirGastoPantalla(navController: NavController) {
                 "Añadir gasto"
             else
                 "Añadir ingreso",
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.headlineSmall
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -91,7 +93,14 @@ fun AnadirGastoPantalla(navController: NavController) {
                 },
                 modifier = Modifier
                     .menuAnchor()
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
+
+                // 🔥 NUEVO
+                shape = RoundedCornerShape(12.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
+                )
             )
 
             ExposedDropdownMenu(
@@ -125,7 +134,14 @@ fun AnadirGastoPantalla(navController: NavController) {
             supportingText = {
                 vm.errorCantidad?.let { Text(it) }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+
+            // 🔥 NUEVO
+            shape = RoundedCornerShape(12.dp),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent
+            )
         )
 
         Button(
@@ -136,7 +152,12 @@ fun AnadirGastoPantalla(navController: NavController) {
                 }
             },
             enabled = vm.puedeGuardar,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+
+            // 🔥 NUEVO
+            shape = RoundedCornerShape(12.dp)
         ) {
             Text("Guardar")
         }

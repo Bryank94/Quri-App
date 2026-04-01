@@ -1,10 +1,12 @@
 package com.example.quritfg.ui.pantallas.configuracion
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -15,17 +17,12 @@ import com.example.quritfg.ui.navegacion.Rutas
 import com.example.quritfg.ui.viewmodels.ConfiguracionMetaViewModel
 import com.example.quritfg.ui.viewmodels.ConfiguracionMetaViewModelFactory
 
-/**
- * Pantalla donde el usuario define su meta de ahorro.
- * Puede usarse como configuracion inicial o como edicion posterior.
- */
 @Composable
 fun ConfiguracionMetaPantalla(
     navController: NavController,
     esPrimeraConfiguracion: Boolean = false
 ) {
 
-    // Se obtiene el repositorio y se inyecta en el ViewModel
     val context = LocalContext.current
     val repositorio = ModuloApp.proporcionarRepositorio(context)
 
@@ -33,71 +30,81 @@ fun ConfiguracionMetaPantalla(
         factory = ConfiguracionMetaViewModelFactory(repositorio)
     )
 
-    Scaffold { padding ->
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
+        Text(
+            text = "Configura tu meta",
+            style = MaterialTheme.typography.headlineSmall
+        )
 
-            Text(
-                text = "Configura tu meta",
-                style = MaterialTheme.typography.headlineMedium
+        OutlinedTextField(
+            value = vm.nombreMeta,
+            onValueChange = vm::onNombreChange,
+            label = { Text("Nombre de la meta") },
+            isError = vm.errorNombre != null,
+            supportingText = {
+                vm.errorNombre?.let { Text(it) }
+            },
+            modifier = Modifier.fillMaxWidth(),
+
+            // 🔥 NUEVO
+            shape = RoundedCornerShape(12.dp),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent
             )
+        )
 
-            // Campo para el nombre de la meta
-            OutlinedTextField(
-                value = vm.nombreMeta,
-                onValueChange = vm::onNombreChange,
-                label = { Text("Nombre de la meta") },
-                isError = vm.errorNombre != null,
-                supportingText = {
-                    vm.errorNombre?.let { Text(it) }
-                },
-                modifier = Modifier.fillMaxWidth()
+        OutlinedTextField(
+            value = vm.cantidadObjetivo,
+            onValueChange = vm::onCantidadObjetivoChange,
+            label = { Text("Cantidad objetivo") },
+            isError = vm.errorCantidad != null,
+            supportingText = {
+                vm.errorCantidad?.let { Text(it) }
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number
+            ),
+            modifier = Modifier.fillMaxWidth(),
+
+            // 🔥 NUEVO
+            shape = RoundedCornerShape(12.dp),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent
             )
+        )
 
-            // Campo para la cantidad objetivo
-            OutlinedTextField(
-                value = vm.cantidadObjetivo,
-                onValueChange = vm::onCantidadObjetivoChange,
-                label = { Text("Cantidad objetivo") },
-                isError = vm.errorCantidad != null,
-                supportingText = {
-                    vm.errorCantidad?.let { Text(it) }
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
+        Button(
+            onClick = {
+                vm.guardarMetaInicial()
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Boton que guarda la meta y navega
-            Button(
-                onClick = {
-                    vm.guardarMetaInicial()
-
-                    if (esPrimeraConfiguracion) {
-                        navController.navigate(Rutas.Inicio.ruta) {
-                            popUpTo(Rutas.Registro.ruta) { inclusive = true }
-                            launchSingleTop = true
-                        }
-                    } else {
-                        navController.navigate(Rutas.Inicio.ruta) {
-                            launchSingleTop = true
-                        }
+                if (esPrimeraConfiguracion) {
+                    navController.navigate(Rutas.Inicio.ruta) {
+                        popUpTo(Rutas.Registro.ruta) { inclusive = true }
+                        launchSingleTop = true
                     }
-                },
-                enabled = vm.puedeGuardar,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Guardar")
-            }
+                } else {
+                    navController.navigate(Rutas.Inicio.ruta) {
+                        launchSingleTop = true
+                    }
+                }
+            },
+            enabled = vm.puedeGuardar,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+
+            // 🔥 NUEVO
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text("Guardar")
         }
     }
 }

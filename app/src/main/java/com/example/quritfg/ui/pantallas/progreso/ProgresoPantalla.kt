@@ -40,11 +40,14 @@ fun ProgresoPantalla(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
 
-        Text("Progreso", style = MaterialTheme.typography.headlineMedium)
+        Text(
+            text = "Progreso",
+            style = MaterialTheme.typography.headlineSmall
+        )
 
         if (meta == null) {
             Text("No hay una meta configurada todavía.")
@@ -52,21 +55,44 @@ fun ProgresoPantalla(navController: NavController) {
             return@Column
         }
 
-        Text("Meta: ${meta?.nombre}")
-        Text("Objetivo: ${resumen.objetivo}")
-        Text("Total ingresos: ${resumen.totalIngresos}")
-        Text("Total gastos: ${resumen.totalGastos}")
-        Text("Ahorro actual: ${resumen.ahorroActual}")
-        Text("Ahorro restante: ${resumen.ahorroRestante}")
+        // 🔥 CARD PRINCIPAL
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        ) {
 
-        Spacer(Modifier.height(8.dp))
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
 
-        Text("Avance: ${(resumen.porcentajeProgreso * 100).toInt()}%")
+                Text(
+                    text = "Resumen",
+                    style = MaterialTheme.typography.titleMedium
+                )
 
-        LinearProgressIndicator(
-            progress = resumen.porcentajeProgreso,
-            modifier = Modifier.fillMaxWidth()
-        )
+                Text("Meta: ${meta?.nombre}")
+                Text("Objetivo: ${resumen.objetivo}")
+                Text("Total ingresos: ${resumen.totalIngresos}")
+                Text("Total gastos: ${resumen.totalGastos}")
+                Text("Ahorro actual: ${resumen.ahorroActual}")
+                Text("Ahorro restante: ${resumen.ahorroRestante}")
+            }
+        }
+
+        // 🔥 PROGRESO SEPARADO
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
+            Text(
+                text = "Avance: ${(resumen.porcentajeProgreso * 100).toInt()}%",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            LinearProgressIndicator(
+                progress = resumen.porcentajeProgreso,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
         Text(
             text = "Este es un análisis general. Aquí no se editan datos.",

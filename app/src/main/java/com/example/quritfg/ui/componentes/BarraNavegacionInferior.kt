@@ -6,6 +6,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.Color // 🔥 IMPORTANTE
 import com.example.quritfg.R
 import com.example.quritfg.ui.navegacion.Rutas
 
@@ -38,13 +39,17 @@ fun BarraNavegacionInferior(navController: NavController) {
                 icon = {
                     Icon(
                         painter = painterResource(id = obtenerIcono(ruta)),
-                        contentDescription = ruta.ruta
+                        contentDescription = ruta.ruta,
+
+                        // 🔥 SOLUCIÓN CLAVE
+                        tint = Color.Unspecified
                     )
                 }
             )
         }
     }
 }
+
 private fun obtenerIcono(ruta: Rutas): Int {
     return when (ruta) {
         Rutas.Inicio -> R.drawable.resumen

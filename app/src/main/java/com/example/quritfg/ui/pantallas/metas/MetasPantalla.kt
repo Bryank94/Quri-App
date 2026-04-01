@@ -1,6 +1,7 @@
 package com.example.quritfg.ui.pantallas.metas
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -14,13 +15,9 @@ import com.example.quritfg.ui.navegacion.Rutas
 import com.example.quritfg.ui.viewmodels.MetasViewModel
 import com.example.quritfg.ui.viewmodels.MetasViewModelFactory
 
-/**
- * Pantalla que muestra la meta actual almacenada en la base de datos.
- */
 @Composable
 fun MetasPantalla(navController: NavController) {
 
-    // Se obtiene el repositorio y se inyecta en el ViewModel
     val context = LocalContext.current
     val repositorio = ModuloApp.proporcionarRepositorio(context)
 
@@ -28,7 +25,6 @@ fun MetasPantalla(navController: NavController) {
         factory = MetasViewModelFactory(repositorio)
     )
 
-    // Se recoge la meta desde Room
     val meta: MetaEntidad? by vm.metaActual.collectAsState(initial = null)
 
     val metaLocal = meta
@@ -36,21 +32,31 @@ fun MetasPantalla(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
 
-        Text("Metas", style = MaterialTheme.typography.headlineMedium)
+        Text(
+            text = "Metas",
+            style = MaterialTheme.typography.headlineSmall
+        )
 
-        // Si no existe meta, se informa al usuario
         if (metaLocal == null) {
             Text("No tienes ninguna meta configurada todavía.")
         } else {
-            // Si existe, se muestra en una tarjeta
+
             Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Meta actual", style = MaterialTheme.typography.titleMedium)
-                    Spacer(Modifier.height(8.dp))
+
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+
+                    Text(
+                        text = "Meta actual",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
                     Text("Nombre: ${metaLocal.nombre}")
                     Text("Objetivo: ${metaLocal.cantidadObjetivo}")
                     Text("Actual: ${metaLocal.cantidadActual}")
@@ -58,16 +64,18 @@ fun MetasPantalla(navController: NavController) {
             }
         }
 
-        Spacer(Modifier.height(8.dp))
-
-        // Boton que navega a la pantalla de configuracion
         Button(
             onClick = {
                 navController.navigate(Rutas.ConfiguracionMeta.ruta) {
                     launchSingleTop = true
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+
+            // 🔥 NUEVO
+            shape = RoundedCornerShape(12.dp)
         ) {
             Text("Nueva meta")
         }
