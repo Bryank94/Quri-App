@@ -20,4 +20,7 @@ sealed class Rutas(val ruta: String) {
     object Historial : Rutas("historial")
 
     object Metas : Rutas("metas")
+
+    // 🔥 AÑADE ESTO
+    object Login : Rutas("login")
 }

@@ -1,46 +1,49 @@
-package com.example.quritfg.ui.pantallas.registro
+package com.example.quritfg.ui.pantallas.login
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 
-import com.example.quritfg.ui.viewmodels.RegistroViewModel
 import com.example.quritfg.ui.navegacion.Rutas
+import com.example.quritfg.datos.SesionManager
 
 @Composable
-fun RegistroPantalla(navController: NavController) {
+fun LoginPantalla(navController: NavController) {
 
-    val vm: RegistroViewModel = viewModel()
+    var correo by remember { mutableStateOf("") }
+    var contrasena by remember { mutableStateOf("") }
+
+    // 🔥 SESIÓN
+    val context = LocalContext.current
+    val sesionManager = SesionManager(context)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.Top // 🔥 IMPORTANTE
+        verticalArrangement = Arrangement.Top
     ) {
 
-        Spacer(modifier = Modifier.height(24.dp)) // 🔥 separación del logo
+        Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Crear cuenta",
+            text = "Iniciar sesión",
             style = MaterialTheme.typography.headlineSmall
         )
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // 📩 CORREO
         OutlinedTextField(
-            value = vm.correo,
-            onValueChange = { vm.onCorreoCambiado(it) },
+            value = correo,
+            onValueChange = { correo = it },
             label = { Text("Correo electrónico") },
-            isError = vm.errorCorreo != null,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors(
@@ -48,24 +51,14 @@ fun RegistroPantalla(navController: NavController) {
                 unfocusedContainerColor = Color.Transparent
             )
         )
-
-        if (vm.errorCorreo != null) {
-            Text(
-                text = vm.errorCorreo!!,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 🔒 CONTRASEÑA
         OutlinedTextField(
-            value = vm.contrasena,
-            onValueChange = { vm.onContrasenaCambiada(it) },
+            value = contrasena,
+            onValueChange = { contrasena = it },
             label = { Text("Contraseña") },
             visualTransformation = PasswordVisualTransformation(),
-            isError = vm.errorContrasena != null,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors(
@@ -74,42 +67,34 @@ fun RegistroPantalla(navController: NavController) {
             )
         )
 
-        if (vm.errorContrasena != null) {
-            Text(
-                text = vm.errorContrasena!!,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-
         Spacer(modifier = Modifier.height(20.dp))
 
-        // ✅ BOTÓN REGISTRO
+        // 🔥 BOTÓN LOGIN CON PERSISTENCIA
         Button(
             onClick = {
-                if (vm.registroValido) {
-                    navController.navigate(Rutas.ConfiguracionMeta.ruta)
+                sesionManager.guardarSesionActiva()
+
+                navController.navigate(Rutas.Inicio.ruta) {
+                    popUpTo(Rutas.Login.ruta) { inclusive = true }
                 }
             },
-            enabled = vm.registroValido,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Text("Crear cuenta")
+            Text("Entrar")
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 🔥 BOTÓN LOGIN
         TextButton(
             onClick = {
-                navController.navigate(Rutas.Login.ruta) // 👈 ajusta si tu ruta es distinta
+                navController.navigate(Rutas.Registro.ruta)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("¿Ya tienes cuenta? Iniciar sesión")
+            Text("¿No tienes cuenta? Crear cuenta")
         }
     }
 }

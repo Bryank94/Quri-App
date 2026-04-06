@@ -1,13 +1,10 @@
 package com.example.quritfg.ui.componentes
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -15,19 +12,21 @@ import com.example.quritfg.R
 
 @Composable
 fun BarraSuperior() {
-    Row(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        horizontalArrangement = Arrangement.Center
+            .height(72.dp) // 🔥 altura fija tipo app real
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.logo_quri),
-            contentDescription = "Logo Quri",
-            modifier = Modifier
-                .fillMaxWidth(0.4f) // 🔥 escala proporcional
-                .height(80.dp)
-                .padding(vertical = 4.dp) // 🔥 mejor ajuste visual
-        )
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.logo_quri),
+                contentDescription = "Logo Quri",
+                modifier = Modifier
+                    .fillMaxWidth(0.35f) // 🔥 mejor proporción
+            )
+        }
     }
 }

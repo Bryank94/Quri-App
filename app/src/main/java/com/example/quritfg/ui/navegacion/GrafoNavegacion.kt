@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+
 import com.example.quritfg.ui.pantallas.anadir.AnadirGastoPantalla
 import com.example.quritfg.ui.pantallas.configuracion.ConfiguracionMetaPantalla
 import com.example.quritfg.ui.pantallas.historial.HistorialPantalla
@@ -12,6 +13,7 @@ import com.example.quritfg.ui.pantallas.inicio.InicioPantalla
 import com.example.quritfg.ui.pantallas.metas.MetasPantalla
 import com.example.quritfg.ui.pantallas.progreso.ProgresoPantalla
 import com.example.quritfg.ui.pantallas.registro.RegistroPantalla
+import com.example.quritfg.ui.pantallas.login.LoginPantalla
 
 /**
  * Define todas las pantallas de la aplicacion y
@@ -20,21 +22,27 @@ import com.example.quritfg.ui.pantallas.registro.RegistroPantalla
 @Composable
 fun GrafoNavegacion(
     navController: NavHostController,
+    startDestination: String, // 🔥 AÑADIDO
     modifier: Modifier = Modifier
 ) {
 
     NavHost(
         navController = navController,
-        startDestination = Rutas.Registro.ruta,
+        startDestination = startDestination, // 🔥 CAMBIADO
         modifier = modifier
     ) {
 
-        // Pantalla inicial de la aplicacion
+        // 🟢 REGISTRO
         composable(Rutas.Registro.ruta) {
             RegistroPantalla(navController)
         }
 
-        // Configuracion inicial de la meta
+        // 🔐 LOGIN
+        composable(Rutas.Login.ruta) {
+            LoginPantalla(navController)
+        }
+
+        // ⚙️ CONFIGURACIÓN
         composable(Rutas.ConfiguracionMeta.ruta) {
             ConfiguracionMetaPantalla(
                 navController,
@@ -42,23 +50,27 @@ fun GrafoNavegacion(
             )
         }
 
-        // Pantallas principales
+        // 🏠 INICIO
         composable(Rutas.Inicio.ruta) {
             InicioPantalla(navController)
         }
 
+        // ➕ AÑADIR GASTO
         composable(Rutas.AnadirGasto.ruta) {
             AnadirGastoPantalla(navController)
         }
 
+        // 📊 PROGRESO
         composable(Rutas.Progreso.ruta) {
             ProgresoPantalla(navController)
         }
 
+        // 📜 HISTORIAL
         composable(Rutas.Historial.ruta) {
             HistorialPantalla(navController)
         }
 
+        // 🎯 METAS
         composable(Rutas.Metas.ruta) {
             MetasPantalla(navController)
         }
