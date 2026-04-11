@@ -9,19 +9,30 @@ import com.example.quritfg.ui.componentes.BarraSuperior
 import com.example.quritfg.ui.navegacion.QuriApp
 import com.example.quritfg.ui.theme.QuriTFGTheme
 
+/**
+ * Actividad principal de la app.
+ *
+ * Es el punto de inicio, donde se carga toda la UI.
+ */
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // permite usar toda la pantalla (sin margenes del sistema)
         enableEdgeToEdge()
 
         setContent {
             QuriTFGTheme {
-                Column {
-                    BarraSuperior() // 🔥 añadimos la barra aquí
 
-                    QuriApp() // 👈 tu navegación sigue funcionando igual
+                // estructura base de la app
+                Column {
+
+                    // barra superior fija
+                    BarraSuperior()
+
+                    // aqui carga toda la app (navegacion incluida)
+                    QuriApp()
                 }
             }
         }

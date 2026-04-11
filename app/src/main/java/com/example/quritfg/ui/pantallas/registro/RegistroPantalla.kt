@@ -14,19 +14,26 @@ import androidx.compose.ui.graphics.Color
 import com.example.quritfg.ui.viewmodels.RegistroViewModel
 import com.example.quritfg.ui.navegacion.Rutas
 
+/**
+ * Pantalla de registro.
+ *
+ * Permite crear una cuenta basica.
+ * La validacion se hace en el ViewModel.
+ */
 @Composable
 fun RegistroPantalla(navController: NavController) {
 
+    // viewmodel (controla estados y errores)
     val vm: RegistroViewModel = viewModel()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.Top // 🔥 IMPORTANTE
+        verticalArrangement = Arrangement.Top // importante para que no se centre
     ) {
 
-        Spacer(modifier = Modifier.height(24.dp)) // 🔥 separación del logo
+        Spacer(modifier = Modifier.height(24.dp)) // separacion arriba
 
         Text(
             text = "Crear cuenta",
@@ -35,13 +42,14 @@ fun RegistroPantalla(navController: NavController) {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // 📩 CORREO
+        // input correo
         OutlinedTextField(
             value = vm.correo,
             onValueChange = { vm.onCorreoCambiado(it) },
             label = { Text("Correo electrónico") },
             isError = vm.errorCorreo != null,
             modifier = Modifier.fillMaxWidth(),
+
             shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
@@ -49,6 +57,7 @@ fun RegistroPantalla(navController: NavController) {
             )
         )
 
+        // mensaje de error correo
         if (vm.errorCorreo != null) {
             Text(
                 text = vm.errorCorreo!!,
@@ -59,7 +68,7 @@ fun RegistroPantalla(navController: NavController) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 🔒 CONTRASEÑA
+        // input contraseña
         OutlinedTextField(
             value = vm.contrasena,
             onValueChange = { vm.onContrasenaCambiada(it) },
@@ -67,6 +76,7 @@ fun RegistroPantalla(navController: NavController) {
             visualTransformation = PasswordVisualTransformation(),
             isError = vm.errorContrasena != null,
             modifier = Modifier.fillMaxWidth(),
+
             shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
@@ -74,6 +84,7 @@ fun RegistroPantalla(navController: NavController) {
             )
         )
 
+        // mensaje de error contraseña
         if (vm.errorContrasena != null) {
             Text(
                 text = vm.errorContrasena!!,
@@ -84,7 +95,11 @@ fun RegistroPantalla(navController: NavController) {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // ✅ BOTÓN REGISTRO
+        /**
+         * Boton registro
+         *
+         * solo funciona si los datos son validos
+         */
         Button(
             onClick = {
                 if (vm.registroValido) {
@@ -102,10 +117,10 @@ fun RegistroPantalla(navController: NavController) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 🔥 BOTÓN LOGIN
+        // ir a login
         TextButton(
             onClick = {
-                navController.navigate(Rutas.Login.ruta) // 👈 ajusta si tu ruta es distinta
+                navController.navigate(Rutas.Login.ruta)
             },
             modifier = Modifier.fillMaxWidth()
         ) {

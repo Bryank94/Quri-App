@@ -25,14 +25,19 @@ import com.example.quritfg.ui.viewmodels.InicioViewModelFactory
 @Composable
 fun InicioPantalla(navController: NavController) {
 
+    // contexto + repositorio
     val context = LocalContext.current
     val repositorio = ModuloApp.proporcionarRepositorio(context)
 
+    // viewmodel (trae meta + resumen ya calculado)
     val vm: InicioViewModel = viewModel(
         factory = InicioViewModelFactory(repositorio)
     )
 
+    // estado de la meta (puede ser null)
     val meta by vm.metaActual.collectAsState(initial = null)
+
+    // resumen financiero completo
     val resumen by vm.resumenFinanciero.collectAsState(
         initial = com.example.quritfg.datos.modelo.ResumenFinanciero(
             totalIngresos = 0.0,
@@ -56,7 +61,9 @@ fun InicioPantalla(navController: NavController) {
             style = MaterialTheme.typography.headlineSmall
         )
 
-        // 🔥 CARD PRINCIPAL (mejora visual clave)
+        /**
+         * Card con toda la info
+         */
         Card(
             modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
@@ -72,6 +79,7 @@ fun InicioPantalla(navController: NavController) {
                     style = MaterialTheme.typography.titleMedium
                 )
 
+                // datos principales (vienen del viewmodel)
                 Text("Nombre: ${meta?.nombre ?: "Sin meta"}")
                 Text("Objetivo: ${resumen.objetivo}")
 
@@ -81,7 +89,9 @@ fun InicioPantalla(navController: NavController) {
             }
         }
 
-        // 🔥 PROGRESO SEPARADO (mejor jerarquía)
+        /**
+         * Barra de progreso de la meta
+         */
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 
             Text(

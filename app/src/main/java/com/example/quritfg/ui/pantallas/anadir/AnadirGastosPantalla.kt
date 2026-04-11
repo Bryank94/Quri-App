@@ -27,13 +27,16 @@ import com.example.quritfg.ui.viewmodels.CategoriaGasto
 @Composable
 fun AnadirGastoPantalla(navController: NavController) {
 
+    // contexto + repositorio
     val context = LocalContext.current
     val repositorio = ModuloApp.proporcionarRepositorio(context)
 
+    // viewmodel (clave porque gestiona toda la logica)
     val vm: AnadirMovimientoViewModel = viewModel(
         factory = AnadirMovimientoViewModelFactory(repositorio)
     )
 
+    // estado del dropdown
     var expandido by remember { mutableStateOf(false) }
 
     Column(
@@ -43,6 +46,7 @@ fun AnadirGastoPantalla(navController: NavController) {
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
 
+        // titulo cambia segun tipo (gasto o ingreso)
         Text(
             text = if (vm.tipoMovimiento == TipoMovimiento.GASTO)
                 "Añadir gasto"
@@ -51,6 +55,7 @@ fun AnadirGastoPantalla(navController: NavController) {
             style = MaterialTheme.typography.headlineSmall
         )
 
+        // selector gasto / ingreso
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
 
             FilterChip(
@@ -66,11 +71,16 @@ fun AnadirGastoPantalla(navController: NavController) {
             )
         }
 
+        // fecha actual (viene del viewmodel)
         Text(
             text = "Fecha: ${vm.fecha}",
             style = MaterialTheme.typography.bodyMedium
         )
 
+        /**
+         * Dropdown para categoria
+         * solo se usa en gastos
+         */
         ExposedDropdownMenuBox(
             expanded = expandido,
             onExpandedChange = { expandido = !expandido }
@@ -95,7 +105,7 @@ fun AnadirGastoPantalla(navController: NavController) {
                     .menuAnchor()
                     .fillMaxWidth(),
 
-                // 🔥 NUEVO
+                // estilo visual
                 shape = RoundedCornerShape(12.dp),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
@@ -108,6 +118,7 @@ fun AnadirGastoPantalla(navController: NavController) {
                 onDismissRequest = { expandido = false }
             ) {
 
+                // solo muestra categorias si es gasto
                 if (vm.tipoMovimiento == TipoMovimiento.GASTO) {
                     CategoriaGasto.entries.forEach { categoria ->
 
@@ -123,6 +134,7 @@ fun AnadirGastoPantalla(navController: NavController) {
             }
         }
 
+        // input de cantidad
         OutlinedTextField(
             value = vm.cantidad,
             onValueChange = vm::onCantidadChange,
@@ -136,7 +148,7 @@ fun AnadirGastoPantalla(navController: NavController) {
             },
             modifier = Modifier.fillMaxWidth(),
 
-            // 🔥 NUEVO
+            // estilo
             shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
@@ -144,9 +156,14 @@ fun AnadirGastoPantalla(navController: NavController) {
             )
         )
 
+        /**
+         * Boton guardar
+         *
+         * Solo se activa si los datos son validos
+         */
         Button(
             onClick = {
-                vm.guardarMovimiento()
+                vm.guardarMovimiento() // guarda en bd
                 navController.navigate(Rutas.Inicio.ruta) {
                     launchSingleTop = true
                 }
@@ -156,7 +173,6 @@ fun AnadirGastoPantalla(navController: NavController) {
                 .fillMaxWidth()
                 .height(50.dp),
 
-            // 🔥 NUEVO
             shape = RoundedCornerShape(12.dp)
         ) {
             Text("Guardar")

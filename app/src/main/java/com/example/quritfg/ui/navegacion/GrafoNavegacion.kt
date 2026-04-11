@@ -32,17 +32,17 @@ fun GrafoNavegacion(
         modifier = modifier
     ) {
 
-        // 🟢 REGISTRO
+        // REGISTRO
         composable(Rutas.Registro.ruta) {
             RegistroPantalla(navController)
         }
 
-        // 🔐 LOGIN
+        // LOGIN
         composable(Rutas.Login.ruta) {
             LoginPantalla(navController)
         }
 
-        // ⚙️ CONFIGURACIÓN
+        //  CONFIGURACIÓN
         composable(Rutas.ConfiguracionMeta.ruta) {
             ConfiguracionMetaPantalla(
                 navController,
@@ -50,27 +50,27 @@ fun GrafoNavegacion(
             )
         }
 
-        // 🏠 INICIO
+        // INICIO
         composable(Rutas.Inicio.ruta) {
             InicioPantalla(navController)
         }
 
-        // ➕ AÑADIR GASTO
+        // AÑADIR GASTO
         composable(Rutas.AnadirGasto.ruta) {
             AnadirGastoPantalla(navController)
         }
 
-        // 📊 PROGRESO
+        // PROGRESO
         composable(Rutas.Progreso.ruta) {
             ProgresoPantalla(navController)
         }
 
-        // 📜 HISTORIAL
+        // HISTORIAL
         composable(Rutas.Historial.ruta) {
             HistorialPantalla(navController)
         }
 
-        // 🎯 METAS
+        // METAS
         composable(Rutas.Metas.ruta) {
             MetasPantalla(navController)
         }

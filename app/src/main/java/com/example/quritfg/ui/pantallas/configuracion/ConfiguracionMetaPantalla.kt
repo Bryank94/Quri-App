@@ -17,15 +17,23 @@ import com.example.quritfg.ui.navegacion.Rutas
 import com.example.quritfg.ui.viewmodels.ConfiguracionMetaViewModel
 import com.example.quritfg.ui.viewmodels.ConfiguracionMetaViewModelFactory
 
+/**
+ * Pantalla para configurar la meta de ahorro.
+ *
+ * Se usa tanto al principio (primera vez)
+ * como despues desde la app.
+ */
 @Composable
 fun ConfiguracionMetaPantalla(
     navController: NavController,
     esPrimeraConfiguracion: Boolean = false
 ) {
 
+    // contexto + repositorio
     val context = LocalContext.current
     val repositorio = ModuloApp.proporcionarRepositorio(context)
 
+    // viewmodel (gestiona estado y validaciones)
     val vm: ConfiguracionMetaViewModel = viewModel(
         factory = ConfiguracionMetaViewModelFactory(repositorio)
     )
@@ -42,6 +50,7 @@ fun ConfiguracionMetaPantalla(
             style = MaterialTheme.typography.headlineSmall
         )
 
+        // input nombre de la meta
         OutlinedTextField(
             value = vm.nombreMeta,
             onValueChange = vm::onNombreChange,
@@ -52,7 +61,6 @@ fun ConfiguracionMetaPantalla(
             },
             modifier = Modifier.fillMaxWidth(),
 
-            // 🔥 NUEVO
             shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
@@ -60,6 +68,7 @@ fun ConfiguracionMetaPantalla(
             )
         )
 
+        // input cantidad objetivo
         OutlinedTextField(
             value = vm.cantidadObjetivo,
             onValueChange = vm::onCantidadObjetivoChange,
@@ -73,7 +82,6 @@ fun ConfiguracionMetaPantalla(
             ),
             modifier = Modifier.fillMaxWidth(),
 
-            // 🔥 NUEVO
             shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
@@ -81,11 +89,17 @@ fun ConfiguracionMetaPantalla(
             )
         )
 
+        /**
+         * Boton guardar meta
+         *
+         * cambia comportamiento si es primera vez
+         */
         Button(
             onClick = {
-                vm.guardarMetaInicial()
+                vm.guardarMetaInicial() // guarda en bd
 
                 if (esPrimeraConfiguracion) {
+                    // elimina pantallas anteriores (registro)
                     navController.navigate(Rutas.Inicio.ruta) {
                         popUpTo(Rutas.Registro.ruta) { inclusive = true }
                         launchSingleTop = true
@@ -101,7 +115,6 @@ fun ConfiguracionMetaPantalla(
                 .fillMaxWidth()
                 .height(50.dp),
 
-            // 🔥 NUEVO
             shape = RoundedCornerShape(12.dp)
         ) {
             Text("Guardar")

@@ -21,6 +21,5 @@ sealed class Rutas(val ruta: String) {
 
     object Metas : Rutas("metas")
 
-    // 🔥 AÑADE ESTO
     object Login : Rutas("login")
 }

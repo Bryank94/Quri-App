@@ -10,22 +10,31 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.quritfg.R
 
+/**
+ * Barra superior de la app.
+ *
+ * Solo muestra el logo centrado, estilo simple tipo app real.
+ * No tiene acciones ni botones.
+ */
 @Composable
 fun BarraSuperior() {
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(72.dp) // 🔥 altura fija tipo app real
+            .height(72.dp) // altura fija para que siempre se vea igual
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center // centra el contenido
         ) {
             Image(
                 painter = painterResource(id = R.drawable.logo_quri),
                 contentDescription = "Logo Quri",
+
+                // controla el tamaño del logo dentro de la barra
                 modifier = Modifier
-                    .fillMaxWidth(0.35f) // 🔥 mejor proporción
+                    .fillMaxWidth(0.35f)
             )
         }
     }

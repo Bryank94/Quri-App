@@ -15,19 +15,27 @@ import com.example.quritfg.ui.navegacion.Rutas
 import com.example.quritfg.ui.viewmodels.MetasViewModel
 import com.example.quritfg.ui.viewmodels.MetasViewModelFactory
 
+/**
+ * Pantalla para ver la meta actual.
+ *
+ * Muestra la info guardada o un mensaje si no hay nada.
+ */
 @Composable
 fun MetasPantalla(navController: NavController) {
 
+    // contexto + repositorio
     val context = LocalContext.current
     val repositorio = ModuloApp.proporcionarRepositorio(context)
 
+    // viewmodel (trae la meta desde bd)
     val vm: MetasViewModel = viewModel(
         factory = MetasViewModelFactory(repositorio)
     )
 
+    // estado de la meta (puede ser null)
     val meta: MetaEntidad? by vm.metaActual.collectAsState(initial = null)
 
-    val metaLocal = meta
+    val metaLocal = meta // uso local mas comodo
 
     Column(
         modifier = Modifier
@@ -41,6 +49,10 @@ fun MetasPantalla(navController: NavController) {
             style = MaterialTheme.typography.headlineSmall
         )
 
+        /**
+         * Si no hay meta -> mensaje
+         * si hay -> muestra card
+         */
         if (metaLocal == null) {
             Text("No tienes ninguna meta configurada todavía.")
         } else {
@@ -57,6 +69,7 @@ fun MetasPantalla(navController: NavController) {
                         style = MaterialTheme.typography.titleMedium
                     )
 
+                    // datos de la meta
                     Text("Nombre: ${metaLocal.nombre}")
                     Text("Objetivo: ${metaLocal.cantidadObjetivo}")
                     Text("Actual: ${metaLocal.cantidadActual}")
@@ -64,6 +77,9 @@ fun MetasPantalla(navController: NavController) {
             }
         }
 
+        /**
+         * Boton para ir a configurar nueva meta
+         */
         Button(
             onClick = {
                 navController.navigate(Rutas.ConfiguracionMeta.ruta) {
@@ -74,7 +90,6 @@ fun MetasPantalla(navController: NavController) {
                 .fillMaxWidth()
                 .height(50.dp),
 
-            // 🔥 NUEVO
             shape = RoundedCornerShape(12.dp)
         ) {
             Text("Nueva meta")

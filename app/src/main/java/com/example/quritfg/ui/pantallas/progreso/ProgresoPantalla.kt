@@ -14,18 +14,27 @@ import com.example.quritfg.datos.modelo.ResumenFinanciero
 import com.example.quritfg.ui.viewmodels.ProgresoViewModel
 import com.example.quritfg.ui.viewmodels.ProgresoViewModelFactory
 
+/**
+ * Pantalla de progreso de la meta.
+ *
+ * Muestra un analisis mas completo que la pantalla de inicio.
+ */
 @Composable
 fun ProgresoPantalla(navController: NavController) {
 
+    // contexto + repositorio
     val context = LocalContext.current
     val repositorio = ModuloApp.proporcionarRepositorio(context)
 
+    // viewmodel (trae meta + resumen)
     val vm: ProgresoViewModel = viewModel(
         factory = ProgresoViewModelFactory(repositorio)
     )
 
+    // meta actual
     val meta: MetaEntidad? by vm.metaActual.collectAsState(initial = null)
 
+    // resumen financiero
     val resumen by vm.resumenFinanciero.collectAsState(
         initial = ResumenFinanciero(
             totalIngresos = 0.0,
@@ -49,13 +58,18 @@ fun ProgresoPantalla(navController: NavController) {
             style = MaterialTheme.typography.headlineSmall
         )
 
+        /**
+         * Si no hay meta, corta aqui
+         */
         if (meta == null) {
             Text("No hay una meta configurada todavía.")
             Text("Ve a configuración de meta para crear una.")
             return@Column
         }
 
-        // 🔥 CARD PRINCIPAL
+        /**
+         * Card con todos los datos
+         */
         Card(
             modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
@@ -71,6 +85,7 @@ fun ProgresoPantalla(navController: NavController) {
                     style = MaterialTheme.typography.titleMedium
                 )
 
+                // datos principales
                 Text("Meta: ${meta?.nombre}")
                 Text("Objetivo: ${resumen.objetivo}")
                 Text("Total ingresos: ${resumen.totalIngresos}")
@@ -80,9 +95,12 @@ fun ProgresoPantalla(navController: NavController) {
             }
         }
 
-        // 🔥 PROGRESO SEPARADO
+        /**
+         * Progreso visual
+         */
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 
+            // convierte a porcentaje
             Text(
                 text = "Avance: ${(resumen.porcentajeProgreso * 100).toInt()}%",
                 style = MaterialTheme.typography.titleMedium
@@ -94,6 +112,7 @@ fun ProgresoPantalla(navController: NavController) {
             )
         }
 
+        // texto informativo
         Text(
             text = "Este es un análisis general. Aquí no se editan datos.",
             style = MaterialTheme.typography.bodySmall

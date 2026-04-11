@@ -14,13 +14,20 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.quritfg.ui.navegacion.Rutas
 import com.example.quritfg.datos.SesionManager
 
+/**
+ * Pantalla de login.
+ *
+ * Permite al usuario iniciar sesion de forma simple.
+ * Aqui no hay validacion real, solo guarda la sesion.
+ */
 @Composable
 fun LoginPantalla(navController: NavController) {
 
+    // estados de los inputs
     var correo by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }
 
-    // 🔥 SESIÓN
+    // gestor de sesion
     val context = LocalContext.current
     val sesionManager = SesionManager(context)
 
@@ -40,11 +47,13 @@ fun LoginPantalla(navController: NavController) {
 
         Spacer(modifier = Modifier.height(20.dp))
 
+        // input correo
         OutlinedTextField(
             value = correo,
             onValueChange = { correo = it },
             label = { Text("Correo electrónico") },
             modifier = Modifier.fillMaxWidth(),
+
             shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
@@ -54,12 +63,14 @@ fun LoginPantalla(navController: NavController) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // input contraseña
         OutlinedTextField(
             value = contrasena,
             onValueChange = { contrasena = it },
             label = { Text("Contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
+            visualTransformation = PasswordVisualTransformation(), // oculta texto
             modifier = Modifier.fillMaxWidth(),
+
             shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
@@ -69,12 +80,17 @@ fun LoginPantalla(navController: NavController) {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // 🔥 BOTÓN LOGIN CON PERSISTENCIA
+        /**
+         * Boton login
+         *
+         * Guarda sesion y navega a inicio
+         */
         Button(
             onClick = {
-                sesionManager.guardarSesionActiva()
+                sesionManager.guardarSesionActiva() // clave
 
                 navController.navigate(Rutas.Inicio.ruta) {
+                    // elimina pantalla de login del historial
                     popUpTo(Rutas.Login.ruta) { inclusive = true }
                 }
             },
@@ -88,6 +104,7 @@ fun LoginPantalla(navController: NavController) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // ir a registro
         TextButton(
             onClick = {
                 navController.navigate(Rutas.Registro.ruta)
