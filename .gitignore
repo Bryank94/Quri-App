@@ -24,4 +24,5 @@ app/build/
 .gradle-user-home/
 .kotlin/
 app/build/
+app/google-services.json
 
