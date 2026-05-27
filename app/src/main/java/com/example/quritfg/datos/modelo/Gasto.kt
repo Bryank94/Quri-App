@@ -9,6 +9,6 @@ package com.example.quritfg.datos.modelo
 data class Gasto(
 
     val categoria: String,
-    val cantidad: Double,
+    val cantidadCentimos: Long,
     val fecha: String
 )

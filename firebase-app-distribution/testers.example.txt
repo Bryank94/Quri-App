@@ -1,0 +1,4 @@
+﻿# Copia este archivo como testers.txt si quieres guardar emails localmente.
+# No subas datos personales de testers al repositorio.
+# Ejemplo:
+# tester1@email.com,tester2@email.com

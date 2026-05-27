@@ -21,6 +21,9 @@ class ProgresoViewModel(
     val metaActual: Flow<MetaEntidad?> =
         repositorio.obtenerMeta()
 
+    val fondos: Flow<List<MetaEntidad>> =
+        repositorio.obtenerFondos()
+
     val listaGastos: Flow<List<GastoEntidad>> =
         repositorio.obtenerGastos()
 
@@ -31,32 +34,32 @@ class ProgresoViewModel(
      * Calcula el resumen financiero
      */
     val resumenFinanciero: Flow<ResumenFinanciero> =
-        combine(metaActual, listaGastos, listaIngresos) { meta, gastos, ingresos ->
+        combine(fondos, listaGastos, listaIngresos) { fondos, gastos, ingresos ->
 
             // calculos principales
-            val totalGastos = gastos.sumOf { it.cantidad }
-            val totalIngresos = ingresos.sumOf { it.cantidad }
-            val ahorroActual = totalIngresos - totalGastos
-            val objetivo = meta?.cantidadObjetivo ?: 0.0
+            val totalGastos = gastos.sumOf { it.cantidadCentimos }
+            val totalIngresos = ingresos.sumOf { it.cantidadCentimos }
+            val ahorroActual = fondos.sumOf { it.cantidadActualCentimos }
+            val objetivo = fondos.sumOf { it.cantidadObjetivoCentimos }
 
             // progreso (limitado entre 0 y 1)
             val porcentajeProgreso =
-                if (objetivo > 0.0)
-                    (ahorroActual / objetivo).toFloat().coerceIn(0f, 1f)
+                if (objetivo > 0L)
+                    (ahorroActual.toDouble() / objetivo.toDouble()).toFloat().coerceIn(0f, 1f)
                 else 0f
 
             // lo que falta por ahorrar
             val ahorroRestante =
-                if (objetivo > 0.0) objetivo - ahorroActual else 0.0
+                if (objetivo > 0L) objetivo - ahorroActual else 0L
 
             // resultado final
             ResumenFinanciero(
-                totalIngresos = totalIngresos,
-                totalGastos = totalGastos,
-                ahorroActual = ahorroActual,
-                objetivo = objetivo,
+                totalIngresosCentimos = totalIngresos,
+                totalGastosCentimos = totalGastos,
+                ahorroActualCentimos = ahorroActual,
+                objetivoCentimos = objetivo,
                 porcentajeProgreso = porcentajeProgreso,
-                ahorroRestante = ahorroRestante
+                ahorroRestanteCentimos = ahorroRestante
             )
         }
 }

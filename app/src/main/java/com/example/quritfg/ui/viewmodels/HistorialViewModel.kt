@@ -1,11 +1,16 @@
-package com.example.quritfg.ui.viewmodels
+﻿package com.example.quritfg.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.quritfg.datos.local.GastoEntidad
+import com.example.quritfg.datos.local.IngresoEntidad
+import com.example.quritfg.datos.modelo.FechaQuri
 import com.example.quritfg.datos.repositorio.RepositorioQuriRoom
 import com.example.quritfg.ui.modelo.HistorialMes
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import java.time.YearMonth
 import java.util.Locale
 
 /**
@@ -18,6 +23,12 @@ class HistorialViewModel(
     private val repositorio: RepositorioQuriRoom
 ) : ViewModel() {
 
+    val ingresos: Flow<List<IngresoEntidad>> =
+        repositorio.obtenerIngresos().map { lista -> lista.sortedByDescending { it.fecha } }
+
+    val gastos: Flow<List<GastoEntidad>> =
+        repositorio.obtenerGastos().map { lista -> lista.sortedByDescending { it.fecha } }
+
     // flujo de datos ya procesados
     val historialAgrupado: Flow<List<HistorialMes>> =
         repositorio.obtenerGastos().map { listaGastos ->
@@ -25,35 +36,36 @@ class HistorialViewModel(
             // ordenar por fecha (mas recientes primero)
             val gastosOrdenados = listaGastos.sortedByDescending { it.fecha }
             val totalesPorMes = listaGastos
-                .groupBy { it.fecha.substring(0, 7) }
-                .mapValues { (_, gastos) -> gastos.sumOf { it.cantidad } }
+                .mapNotNull { gasto -> gasto.yearMonthOrNull()?.let { it to gasto } }
+                .groupBy(keySelector = { it.first }, valueTransform = { it.second })
+                .mapValues { (_, gastos) -> gastos.sumOf { it.cantidadCentimos } }
             val mesesOrdenados = totalesPorMes.keys.sorted()
 
             // agrupar por mes (yyyy-mm)
-            val agrupados = gastosOrdenados.groupBy { gasto ->
-                gasto.fecha.substring(0, 7)
-            }
+            val agrupados = gastosOrdenados
+                .mapNotNull { gasto -> gasto.yearMonthOrNull()?.let { it to gasto } }
+                .groupBy(keySelector = { it.first }, valueTransform = { it.second })
 
             // convertir a modelo para la UI
             agrupados.map { (mes, gastos) ->
-                val totalMes = gastos.sumOf { it.cantidad }
+                val totalMes = gastos.sumOf { it.cantidadCentimos }
                 val indiceMes = mesesOrdenados.indexOf(mes)
                 val mesAnterior = mesesOrdenados.getOrNull(indiceMes - 1)
                 val totalMesAnterior = mesAnterior?.let { totalesPorMes[it] }
-                val comparacion = if (totalMesAnterior != null && totalMesAnterior > 0.0) {
-                    ((totalMes - totalMesAnterior) / totalMesAnterior) * 100.0
+                val comparacion = if (totalMesAnterior != null && totalMesAnterior > 0L) {
+                    ((totalMes - totalMesAnterior).toDouble() / totalMesAnterior.toDouble()) * 100.0
                 } else {
                     null
                 }
 
                 HistorialMes(
-                    mes = mes,
+                    mes = mes.toString(),
                     gastos = gastos,
-                    totalGastado = totalMes,
+                    totalGastadoCentimos = totalMes,
                     comparacionMesAnterior = comparacion,
-                    totalInnecesario = gastos
+                    totalInnecesarioCentimos = gastos
                         .filter { it.etiqueta == "Innecesario" }
-                        .sumOf { it.cantidad }
+                        .sumOf { it.cantidadCentimos }
                 )
             }
         }
@@ -64,8 +76,8 @@ class HistorialViewModel(
                 ?: return@map "Registra tus primeros gastos para empezar a ver consejos de ahorro."
 
             val porcentajeInnecesario =
-                if (mesActual.totalGastado > 0.0)
-                    (mesActual.totalInnecesario / mesActual.totalGastado) * 100.0
+                if (mesActual.totalGastadoCentimos > 0L)
+                    (mesActual.totalInnecesarioCentimos.toDouble() / mesActual.totalGastadoCentimos.toDouble()) * 100.0
                 else 0.0
 
             val comparacion = mesActual.comparacionMesAnterior
@@ -85,6 +97,30 @@ class HistorialViewModel(
             }
         }
 
+    fun actualizarIngreso(ingreso: IngresoEntidad) {
+        viewModelScope.launch { repositorio.actualizarIngreso(ingreso) }
+    }
+
+    fun eliminarIngreso(ingresoId: Int) {
+        viewModelScope.launch { repositorio.eliminarIngreso(ingresoId) }
+    }
+
+    fun actualizarGasto(gasto: GastoEntidad) {
+        viewModelScope.launch { repositorio.actualizarGasto(gasto) }
+    }
+
+    fun eliminarGasto(gastoId: Int) {
+        viewModelScope.launch { repositorio.eliminarGasto(gastoId) }
+    }
+
     private fun formatear(valor: Double): String =
         String.format(Locale.US, "%.1f", valor)
+
+    private fun GastoEntidad.yearMonthOrNull(): YearMonth? =
+        try {
+            YearMonth.from(FechaQuri.parsear(fecha))
+        } catch (_: Exception) {
+            null
+        }
 }
+

@@ -11,20 +11,20 @@ package com.example.quritfg.datos.modelo
 data class ResumenFinanciero(
 
     // suma total de ingresos
-    val totalIngresos: Double,
+    val totalIngresosCentimos: Long,
 
     // suma total de gastos
-    val totalGastos: Double,
+    val totalGastosCentimos: Long,
 
     // dinero ahorrado actualmente
-    val ahorroActual: Double,
+    val ahorroActualCentimos: Long,
 
     // objetivo de ahorro definido
-    val objetivo: Double,
+    val objetivoCentimos: Long,
 
     // porcentaje de progreso hacia el objetivo
     val porcentajeProgreso: Float,
 
     // lo que falta por ahorrar
-    val ahorroRestante: Double
+    val ahorroRestanteCentimos: Long
 )

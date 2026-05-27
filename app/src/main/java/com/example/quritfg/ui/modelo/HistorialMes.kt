@@ -16,9 +16,9 @@ data class HistorialMes(
     // lista de gastos de ese mes
     val gastos: List<GastoEntidad>,
 
-    val totalGastado: Double,
+    val totalGastadoCentimos: Long,
 
     val comparacionMesAnterior: Double?,
 
-    val totalInnecesario: Double
+    val totalInnecesarioCentimos: Long
 )

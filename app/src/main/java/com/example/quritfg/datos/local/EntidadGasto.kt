@@ -45,7 +45,7 @@ data class GastoEntidad(
     /**
      * Cantidad económica asociada al gasto.
      */
-    val cantidad: Double,
+    val cantidadCentimos: Long,
 
     /**
      * Fecha en la que se registró el gasto.

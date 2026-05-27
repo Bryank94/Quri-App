@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.combine
 /**
  * ViewModel de la pantalla inicio.
  *
- * Aqui se combinan los datos de gastos, ingresos y meta
+ * Aqui se combinan los datos de gastos, ingresos y fondos
  * para generar el resumen financiero.
  */
 class InicioViewModel(
@@ -20,6 +20,9 @@ class InicioViewModel(
     // datos base
     val metaActual: Flow<MetaEntidad?> =
         repositorio.obtenerMeta()
+
+    val fondos: Flow<List<MetaEntidad>> =
+        repositorio.obtenerFondos()
 
     val listaGastos: Flow<List<GastoEntidad>> =
         repositorio.obtenerGastos()
@@ -31,32 +34,32 @@ class InicioViewModel(
      * Flujo con todos los calculos ya hechos
      */
     val resumenFinanciero: Flow<ResumenFinanciero> =
-        combine(metaActual, listaGastos, listaIngresos) { meta, gastos, ingresos ->
+        combine(fondos, listaGastos, listaIngresos) { fondos, gastos, ingresos ->
 
             // calculos basicos
-            val totalGastos = gastos.sumOf { it.cantidad }
-            val totalIngresos = ingresos.sumOf { it.cantidad }
-            val ahorroActual = totalIngresos - totalGastos
-            val objetivo = meta?.cantidadObjetivo ?: 0.0
+            val totalGastos = gastos.sumOf { it.cantidadCentimos }
+            val totalIngresos = ingresos.sumOf { it.cantidadCentimos }
+            val ahorroActual = fondos.sumOf { it.cantidadActualCentimos }
+            val objetivo = fondos.sumOf { it.cantidadObjetivoCentimos }
 
             // porcentaje de progreso (limitado entre 0 y 1)
             val porcentajeProgreso =
-                if (objetivo > 0.0)
-                    (ahorroActual / objetivo).toFloat().coerceIn(0f, 1f)
+                if (objetivo > 0L)
+                    (ahorroActual.toDouble() / objetivo.toDouble()).toFloat().coerceIn(0f, 1f)
                 else 0f
 
             // dinero que falta
             val ahorroRestante =
-                if (objetivo > 0.0) objetivo - ahorroActual else 0.0
+                if (objetivo > 0L) objetivo - ahorroActual else 0L
 
             // resultado final para la UI
             ResumenFinanciero(
-                totalIngresos = totalIngresos,
-                totalGastos = totalGastos,
-                ahorroActual = ahorroActual,
-                objetivo = objetivo,
+                totalIngresosCentimos = totalIngresos,
+                totalGastosCentimos = totalGastos,
+                ahorroActualCentimos = ahorroActual,
+                objetivoCentimos = objetivo,
                 porcentajeProgreso = porcentajeProgreso,
-                ahorroRestante = ahorroRestante
+                ahorroRestanteCentimos = ahorroRestante
             )
         }
 }

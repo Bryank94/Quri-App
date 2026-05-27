@@ -21,7 +21,7 @@ import androidx.room.PrimaryKey
             onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index(value = ["usuarioId"], unique = true)]
+    indices = [Index(value = ["usuarioId"])]
 )
 data class MetaEntidad(
 
@@ -31,12 +31,18 @@ data class MetaEntidad(
 
     val usuarioId: Int = 0,
 
-    // Nombre descriptivo de la meta (por ejemplo: "Viaje", "Coche")
+    // Nombre descriptivo del fondo (por ejemplo: "Viaje", "Coche")
     val nombre: String,
 
     // Cantidad que el usuario quiere alcanzar
-    val cantidadObjetivo: Double,
+    val cantidadObjetivoCentimos: Long,
 
-    // Progreso acumulado hacia esa meta
-    val cantidadActual: Double
+    // Dinero aportado a este fondo
+    val cantidadActualCentimos: Long,
+
+    // Fecha limite para alcanzar el objetivo, en formato dd-MM-yyyy
+    val fechaLimite: String,
+
+    // 1 = alta, 2 = media, 3 = baja
+    val prioridad: Int = 2
 )

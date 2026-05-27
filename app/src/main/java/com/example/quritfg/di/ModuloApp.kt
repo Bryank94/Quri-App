@@ -19,6 +19,8 @@ object ModuloApp {
                 baseDatos.metaDao(),
                 baseDatos.gastoDao(),
                 baseDatos.ingresoDao(),
+                baseDatos.ingresoDetectadoDao(),
+                baseDatos.repartoDetectadoDao(),
                 baseDatos.usuarioDao(),
                 SesionManager(appContext)
             )

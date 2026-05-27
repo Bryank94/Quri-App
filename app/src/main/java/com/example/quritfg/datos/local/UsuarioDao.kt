@@ -3,6 +3,7 @@ package com.example.quritfg.datos.local
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 /**
  * DAO encargado de todo lo relacionado con usuarios.
@@ -30,6 +31,9 @@ interface UsuarioDao {
      */
     @Query("SELECT * FROM usuarios WHERE email = :email LIMIT 1")
     suspend fun obtenerUsuarioPorEmail(email: String): UsuarioEntidad?
+
+    @Query("SELECT * FROM usuarios ORDER BY id DESC")
+    fun obtenerTodosUsuarios(): Flow<List<UsuarioEntidad>>
 
     @Query(
         """

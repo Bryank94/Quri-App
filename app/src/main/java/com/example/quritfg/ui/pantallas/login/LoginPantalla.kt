@@ -28,6 +28,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.quritfg.datos.SesionManager
 import com.example.quritfg.datos.di.ModuloApp
+import com.example.quritfg.ui.config.quriTexto
 import com.example.quritfg.ui.navegacion.Rutas
 import com.example.quritfg.ui.viewmodels.AutenticacionViewModelFactory
 import com.example.quritfg.ui.viewmodels.AutentificacionViewModel
@@ -42,6 +43,7 @@ fun LoginPantalla(navController: NavController) {
     val context = LocalContext.current
     val repositorio = ModuloApp.proporcionarRepositorio(context)
     val sesionManager = SesionManager(context)
+    val errorCredenciales = quriTexto("Correo o contrasena incorrectos", "Incorrect email or password")
     val autenticacionVm: AutentificacionViewModel = viewModel(
         factory = AutenticacionViewModelFactory(repositorio)
     )
@@ -56,7 +58,7 @@ fun LoginPantalla(navController: NavController) {
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Iniciar sesion",
+            text = quriTexto("Iniciar sesion", "Sign in"),
             style = MaterialTheme.typography.headlineSmall
         )
 
@@ -68,7 +70,7 @@ fun LoginPantalla(navController: NavController) {
                 correo = it
                 errorLogin = null
             },
-            label = { Text("Correo electronico") },
+            label = { Text(quriTexto("Correo electronico", "Email")) },
             isError = errorLogin != null,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
@@ -86,7 +88,7 @@ fun LoginPantalla(navController: NavController) {
                 contrasena = it
                 errorLogin = null
             },
-            label = { Text("Contrasena") },
+            label = { Text(quriTexto("Contrasena", "Password")) },
             visualTransformation = PasswordVisualTransformation(),
             isError = errorLogin != null,
             modifier = Modifier.fillMaxWidth(),
@@ -114,11 +116,12 @@ fun LoginPantalla(navController: NavController) {
                     if (usuario != null) {
                         sesionManager.guardarSesionActiva(usuario.id, usuario.email)
 
-                        navController.navigate(Rutas.Inicio.ruta) {
+                        val destino = if (sesionManager.onboardingVisto()) Rutas.Inicio.ruta else Rutas.Onboarding.ruta
+                        navController.navigate(destino) {
                             popUpTo(Rutas.Login.ruta) { inclusive = true }
                         }
                     } else {
-                        errorLogin = "Correo o contrasena incorrectos"
+                        errorLogin = errorCredenciales
                     }
                 }
             },
@@ -128,7 +131,7 @@ fun LoginPantalla(navController: NavController) {
                 .height(50.dp),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Text("Entrar")
+            Text(quriTexto("Entrar", "Enter"))
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -139,7 +142,7 @@ fun LoginPantalla(navController: NavController) {
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("No tienes cuenta? Crear cuenta")
+            Text(quriTexto("No tienes cuenta? Crear cuenta", "No account? Create one"))
         }
     }
 }

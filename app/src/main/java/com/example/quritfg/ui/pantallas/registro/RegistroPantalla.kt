@@ -3,6 +3,7 @@ package com.example.quritfg.ui.pantallas.registro
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,6 +21,8 @@ import androidx.compose.ui.platform.LocalContext
 
 import com.example.quritfg.datos.SesionManager
 import com.example.quritfg.datos.di.ModuloApp
+import com.example.quritfg.ui.config.quriTexto
+import com.example.quritfg.ui.config.quriValor
 import com.example.quritfg.ui.viewmodels.AutenticacionViewModelFactory
 import com.example.quritfg.ui.viewmodels.AutentificacionViewModel
 import com.example.quritfg.ui.viewmodels.RegistroViewModel
@@ -48,6 +51,13 @@ fun RegistroPantalla(navController: NavController) {
         factory = AutenticacionViewModelFactory(repositorio)
     )
     var mensajeSocial by remember { mutableStateOf<String?>(null) }
+    val errorTokenGoogle = quriTexto("No se pudo obtener el token de Google.", "Could not get the Google token.")
+    val errorEmailGoogle = quriTexto("Google no devolvio un correo valido.", "Google did not return a valid email.")
+    val errorSesionLocal = quriTexto("No se pudo crear la sesion local.", "Could not create the local session.")
+    val errorLoginGmail = quriTexto("No se pudo iniciar sesion con Gmail.", "Could not sign in with Gmail.")
+    val errorGmailCancelado = quriTexto("Inicio de sesion con Gmail cancelado o no disponible.", "Gmail sign-in was cancelled or is unavailable.")
+    val errorShaFirebase = quriTexto("Falta configurar SHA-1 en Firebase y descargar de nuevo google-services.json.", "SHA-1 must be configured in Firebase and google-services.json downloaded again.")
+    val errorFacebook = quriTexto("Para crear cuenta con Facebook falta conectar Firebase Auth.", "Facebook account creation requires connecting Firebase Auth.")
     val webClientId = remember(context) {
         val recurso = context.resources.getIdentifier(
             "default_web_client_id",
@@ -75,7 +85,7 @@ fun RegistroPantalla(navController: NavController) {
             val idToken = cuenta.idToken
 
             if (idToken == null) {
-                mensajeSocial = "No se pudo obtener el token de Google."
+                mensajeSocial = errorTokenGoogle
                 return@rememberLauncherForActivityResult
             }
 
@@ -86,24 +96,28 @@ fun RegistroPantalla(navController: NavController) {
                         val email = tareaAuth.result?.user?.email
 
                         if (email == null) {
-                            mensajeSocial = "Google no devolvio un correo valido."
+                            mensajeSocial = errorEmailGoogle
                             return@addOnCompleteListener
                         }
 
                         autenticacionVm.iniciarSesionExterna(email) { usuario ->
                             if (usuario != null) {
-                                sesionManager.guardarSesionActiva(usuario.id, usuario.email)
-                                navController.navigate(Rutas.ConfiguracionMeta.ruta)
+                                sesionManager.guardarSesionActiva(
+                                    usuario.id,
+                                    usuario.email,
+                                    tareaAuth.result?.user?.uid
+                                )
+                                navController.navigate(Rutas.Onboarding.ruta)
                             } else {
-                                mensajeSocial = "No se pudo crear la sesion local."
+                                mensajeSocial = errorSesionLocal
                             }
                         }
                     } else {
-                        mensajeSocial = "No se pudo iniciar sesion con Gmail."
+                        mensajeSocial = errorLoginGmail
                     }
                 }
         } catch (_: ApiException) {
-            mensajeSocial = "Inicio de sesion con Gmail cancelado o no disponible."
+            mensajeSocial = errorGmailCancelado
         }
     }
 
@@ -117,7 +131,7 @@ fun RegistroPantalla(navController: NavController) {
         Spacer(modifier = Modifier.height(24.dp)) // separacion arriba
 
         Text(
-            text = "Crear cuenta",
+            text = quriTexto("Crear cuenta", "Create account"),
             style = MaterialTheme.typography.headlineSmall
         )
 
@@ -127,7 +141,7 @@ fun RegistroPantalla(navController: NavController) {
         OutlinedTextField(
             value = vm.correo,
             onValueChange = { vm.onCorreoCambiado(it) },
-            label = { Text("Correo electrónico") },
+            label = { Text(quriTexto("Correo electronico", "Email")) },
             isError = vm.errorCorreo != null,
             modifier = Modifier.fillMaxWidth(),
 
@@ -141,7 +155,7 @@ fun RegistroPantalla(navController: NavController) {
         // mensaje de error correo
         if (vm.errorCorreo != null) {
             Text(
-                text = vm.errorCorreo!!,
+                text = quriValor(vm.errorCorreo!!),
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -153,7 +167,7 @@ fun RegistroPantalla(navController: NavController) {
         OutlinedTextField(
             value = vm.contrasena,
             onValueChange = { vm.onContrasenaCambiada(it) },
-            label = { Text("Contraseña") },
+            label = { Text(quriTexto("Contrasena", "Password")) },
             visualTransformation = PasswordVisualTransformation(),
             isError = vm.errorContrasena != null,
             modifier = Modifier.fillMaxWidth(),
@@ -168,7 +182,7 @@ fun RegistroPantalla(navController: NavController) {
         // mensaje de error contraseña
         if (vm.errorContrasena != null) {
             Text(
-                text = vm.errorContrasena!!,
+                text = quriValor(vm.errorContrasena!!),
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -187,7 +201,7 @@ fun RegistroPantalla(navController: NavController) {
                     autenticacionVm.registrarUsuario(vm.correo, vm.contrasena) { usuario ->
                         if (usuario != null) {
                             sesionManager.guardarSesionActiva(usuario.id, usuario.email)
-                            navController.navigate(Rutas.ConfiguracionMeta.ruta)
+                            navController.navigate(Rutas.Onboarding.ruta)
                         }
                     }
                 }
@@ -198,7 +212,7 @@ fun RegistroPantalla(navController: NavController) {
                 .height(50.dp),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Text("Crear cuenta")
+            Text(quriTexto("Crear cuenta", "Create account"))
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -207,26 +221,35 @@ fun RegistroPantalla(navController: NavController) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedButton(
+            Button(
                 onClick = {
                     if (webClientId == null) {
-                        mensajeSocial = "Falta configurar SHA-1 en Firebase y descargar de nuevo google-services.json."
+                        mensajeSocial = errorShaFirebase
                     } else {
                         googleLauncher.launch(googleSignInClient.signInIntent)
                     }
                 },
                 modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, Color(0xFFDB4437)),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = Color(0xFFDB4437)
+                )
             ) {
-                Text("Gmail")
+                Text("Google")
             }
 
-            OutlinedButton(
+            Button(
                 onClick = {
-                    mensajeSocial = "Para crear cuenta con Facebook falta conectar Firebase Auth."
+                    mensajeSocial = errorFacebook
                 },
                 modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF1877F2),
+                    contentColor = Color.White
+                )
             ) {
                 Text("Facebook")
             }
@@ -250,7 +273,7 @@ fun RegistroPantalla(navController: NavController) {
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("¿Ya tienes cuenta? Iniciar sesión")
+            Text(quriTexto("Ya tienes cuenta? Iniciar sesion", "Already have an account? Sign in"))
         }
     }
 }

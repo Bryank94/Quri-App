@@ -1,9 +1,15 @@
-package com.example.quritfg
+﻿package com.example.quritfg
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalContext
+import com.example.quritfg.datos.analytics.LocalAnalyticsTracker
+import com.example.quritfg.datos.analytics.QuriAnalyticsEvents
+import com.example.quritfg.ui.config.LocalQuriSettings
+import com.example.quritfg.ui.config.rememberQuriSettings
 import com.example.quritfg.ui.navegacion.QuriApp
 import com.example.quritfg.ui.theme.QuriTFGTheme
 
@@ -19,12 +25,18 @@ class MainActivity : ComponentActivity() {
 
         // permite usar toda la pantalla (sin margenes del sistema)
         enableEdgeToEdge()
+        LocalAnalyticsTracker(this).track(QuriAnalyticsEvents.APP_OPENED)
 
         setContent {
-            QuriTFGTheme {
-                // aqui carga toda la app (navegacion incluida)
-                QuriApp()
+            val settings = rememberQuriSettings(LocalContext.current)
+
+            CompositionLocalProvider(LocalQuriSettings provides settings) {
+                QuriTFGTheme(darkTheme = settings.temaOscuro) {
+                    // aqui carga toda la app (navegacion incluida)
+                    QuriApp()
+                }
             }
         }
     }
 }
+

@@ -26,3 +26,5 @@ app/build/
 app/build/
 app/google-services.json
 
+
+/dist/

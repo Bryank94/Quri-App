@@ -8,6 +8,6 @@ package com.example.quritfg.datos.modelo
  */
 data class Meta(
     val nombre: String,
-    val cantidadObjetivo: Double,
-    val cantidadActual: Double = 0.0
+    val cantidadObjetivoCentimos: Long,
+    val cantidadActualCentimos: Long = 0L
 )

@@ -1,16 +1,21 @@
-package com.example.quritfg.datos.repositorio
+﻿package com.example.quritfg.datos.repositorio
 
 import android.database.sqlite.SQLiteConstraintException
 import android.util.Base64
 import com.example.quritfg.datos.SesionManager
 import com.example.quritfg.datos.local.GastoDao
 import com.example.quritfg.datos.local.GastoEntidad
+import com.example.quritfg.datos.local.IngresoDetectadoDao
+import com.example.quritfg.datos.local.IngresoDetectadoEntidad
 import com.example.quritfg.datos.local.IngresoDao
 import com.example.quritfg.datos.local.IngresoEntidad
 import com.example.quritfg.datos.local.MetaDao
 import com.example.quritfg.datos.local.MetaEntidad
+import com.example.quritfg.datos.local.RepartoDetectadoDao
+import com.example.quritfg.datos.local.RepartoDetectadoEntidad
 import com.example.quritfg.datos.local.UsuarioDao
 import com.example.quritfg.datos.local.UsuarioEntidad
+import com.example.quritfg.datos.modelo.FechaQuri
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import java.security.MessageDigest
@@ -22,6 +27,8 @@ class RepositorioQuriRoom(
     private val metaDao: MetaDao,
     private val gastoDao: GastoDao,
     private val ingresoDao: IngresoDao,
+    private val ingresoDetectadoDao: IngresoDetectadoDao,
+    private val repartoDetectadoDao: RepartoDetectadoDao,
     private val usuarioDao: UsuarioDao,
     private val sesionManager: SesionManager
 ) {
@@ -38,9 +45,25 @@ class RepositorioQuriRoom(
         return metaDao.obtenerMeta(usuarioId)
     }
 
+    fun obtenerFondos(): Flow<List<MetaEntidad>> {
+        val usuarioId = usuarioActivoId() ?: return flowOf(emptyList())
+        return metaDao.obtenerFondos(usuarioId)
+    }
+
     suspend fun guardarMeta(meta: MetaEntidad) {
         val usuarioId = usuarioActivoId() ?: return
         metaDao.insertarMeta(meta.copy(usuarioId = usuarioId))
+    }
+
+    suspend fun eliminarFondo(fondoId: Int) {
+        val usuarioId = usuarioActivoId() ?: return
+        metaDao.eliminarFondo(fondoId, usuarioId)
+    }
+
+    suspend fun aportarAFondo(fondoId: Int?, cantidadCentimos: Long) {
+        val usuarioId = usuarioActivoId() ?: return
+        if (fondoId == null || cantidadCentimos <= 0L) return
+        metaDao.aportarAFondo(fondoId, usuarioId, cantidadCentimos)
     }
 
     fun obtenerGastos(): Flow<List<GastoEntidad>> {
@@ -53,21 +76,181 @@ class RepositorioQuriRoom(
         gastoDao.insertarGasto(gasto.copy(usuarioId = usuarioId))
     }
 
+    suspend fun actualizarGasto(gasto: GastoEntidad) {
+        val usuarioId = usuarioActivoId() ?: return
+        gastoDao.actualizarGasto(
+            gastoId = gasto.id,
+            usuarioId = usuarioId,
+            categoria = gasto.categoria,
+            cantidadCentimos = gasto.cantidadCentimos,
+            fecha = gasto.fecha,
+            etiqueta = gasto.etiqueta
+        )
+    }
+
+    suspend fun eliminarGasto(gastoId: Int) {
+        val usuarioId = usuarioActivoId() ?: return
+        gastoDao.eliminarGasto(gastoId, usuarioId)
+    }
+
     fun obtenerIngresos(): Flow<List<IngresoEntidad>> {
         val usuarioId = usuarioActivoId() ?: return flowOf(emptyList())
         return ingresoDao.obtenerIngresos(usuarioId)
     }
+
+    fun obtenerUsuariosAdmin(): Flow<List<UsuarioEntidad>> =
+        usuarioDao.obtenerTodosUsuarios()
+
+    fun contarGastosAdmin(): Flow<Int> =
+        gastoDao.contarTodos()
+
+    fun contarIngresosAdmin(): Flow<Int> =
+        ingresoDao.contarTodos()
+
+    fun contarFondosAdmin(): Flow<Int> =
+        metaDao.contarTodas()
 
     suspend fun anadirIngreso(ingreso: IngresoEntidad) {
         val usuarioId = usuarioActivoId() ?: return
         ingresoDao.insertarIngreso(ingreso.copy(usuarioId = usuarioId))
     }
 
+    suspend fun actualizarIngreso(ingreso: IngresoEntidad) {
+        val usuarioId = usuarioActivoId() ?: return
+        ingresoDao.actualizarIngreso(
+            ingresoId = ingreso.id,
+            usuarioId = usuarioId,
+            cantidadCentimos = ingreso.cantidadCentimos,
+            fecha = ingreso.fecha,
+            concepto = ingreso.concepto
+        )
+    }
+
+    suspend fun eliminarIngreso(ingresoId: Int) {
+        val usuarioId = usuarioActivoId() ?: return
+        ingresoDao.eliminarIngreso(ingresoId, usuarioId)
+    }
+
+    fun obtenerIngresosDetectados(): Flow<List<IngresoDetectadoEntidad>> {
+        val usuarioId = usuarioActivoId() ?: return flowOf(emptyList())
+        return ingresoDetectadoDao.obtenerIngresosDetectados(usuarioId)
+    }
+
+    suspend fun guardarIngresoDetectado(ingreso: IngresoDetectadoEntidad) {
+        val usuarioId = usuarioActivoId() ?: return
+        ingresoDetectadoDao.insertarIngresoDetectado(ingreso.copy(usuarioId = usuarioId))
+    }
+
+    suspend fun confirmarIngresoDetectado(
+        ingreso: IngresoEntidad,
+        ingresoDetectado: IngresoDetectadoEntidad,
+        repartos: List<RepartoDetectadoEntidad>
+    ) {
+        val usuarioId = usuarioActivoId() ?: return
+        ingresoDao.insertarIngreso(ingreso.copy(usuarioId = usuarioId))
+        repartos.forEach { reparto ->
+            if (reparto.cantidadCentimos > 0L) {
+                metaDao.aportarAFondo(reparto.fondoId, usuarioId, reparto.cantidadCentimos)
+            }
+        }
+        val ingresoId = ingresoDetectadoDao.insertarIngresoDetectado(ingresoDetectado.copy(usuarioId = usuarioId)).toInt()
+        repartoDetectadoDao.insertarRepartos(
+            repartos
+                .filter { it.cantidadCentimos > 0L }
+                .map { it.copy(ingresoDetectadoId = ingresoId) }
+        )
+    }
+
+    suspend fun deshacerReparto(ingresoDetectado: IngresoDetectadoEntidad) {
+        val usuarioId = usuarioActivoId() ?: return
+        if (ingresoDetectado.deshecho) return
+
+        val repartos = repartoDetectadoDao.obtenerRepartosPorIngreso(ingresoDetectado.id)
+        repartos.forEach { reparto ->
+            metaDao.restarAFondo(reparto.fondoId, usuarioId, reparto.cantidadCentimos)
+        }
+        ingresoDetectadoDao.marcarDeshecho(ingresoDetectado.id, usuarioId)
+    }
+
     suspend fun reiniciarDatosUsuario() {
         val usuarioId = usuarioActivoId() ?: return
         gastoDao.borrarTodos(usuarioId)
         ingresoDao.borrarTodos(usuarioId)
+        ingresoDetectadoDao.borrarTodos(usuarioId)
         metaDao.borrarTodas(usuarioId)
+    }
+
+    suspend fun cargarDatosDemoPreBeta() {
+        val usuarioId = usuarioActivoId() ?: return
+        reiniciarDatosUsuario()
+
+        val viajeId = metaDao.insertarMeta(
+            MetaEntidad(
+                usuarioId = usuarioId,
+                nombre = "Viaje",
+                cantidadObjetivoCentimos = 1_200_00,
+                cantidadActualCentimos = 300_00,
+                fechaLimite = "31-08-2026",
+                prioridad = 1
+            )
+        ).toInt()
+        val emergenciaId = metaDao.insertarMeta(
+            MetaEntidad(
+                usuarioId = usuarioId,
+                nombre = "Emergencia",
+                cantidadObjetivoCentimos = 1_000_00,
+                cantidadActualCentimos = 250_00,
+                fechaLimite = "31-12-2026",
+                prioridad = 1
+            )
+        ).toInt()
+        val sofaId = metaDao.insertarMeta(
+            MetaEntidad(
+                usuarioId = usuarioId,
+                nombre = "Sofa",
+                cantidadObjetivoCentimos = 500_00,
+                cantidadActualCentimos = 80_00,
+                fechaLimite = "30-06-2026",
+                prioridad = 2
+            )
+        ).toInt()
+
+        val fecha = FechaQuri.hoyTexto()
+        ingresoDao.insertarIngreso(
+            IngresoEntidad(
+                usuarioId = usuarioId,
+                cantidadCentimos = 1_300_00,
+                fecha = fecha,
+                concepto = "Nomina demo"
+            )
+        )
+        listOf(
+            GastoEntidad(usuarioId = usuarioId, categoria = "Alquiler", cantidadCentimos = 520_00, fecha = fecha, etiqueta = "Necesario"),
+            GastoEntidad(usuarioId = usuarioId, categoria = "Supermercado", cantidadCentimos = 180_00, fecha = fecha, etiqueta = "Necesario"),
+            GastoEntidad(usuarioId = usuarioId, categoria = "Ocio", cantidadCentimos = 75_00, fecha = fecha, etiqueta = "Innecesario")
+        ).forEach { gastoDao.insertarGasto(it) }
+
+        val repartoResumen = "Viaje: 195 | Emergencia: 100 | Sofa: 125"
+        val ingresoDetectadoId = ingresoDetectadoDao.insertarIngresoDetectado(
+            IngresoDetectadoEntidad(
+                usuarioId = usuarioId,
+                concepto = "Nomina mayo detectada",
+                entidad = "Banco Quri Demo",
+                cantidadCentimos = 1_300_00,
+                fecha = fecha,
+                repartoResumen = repartoResumen,
+                totalAsignadoCentimos = 420_00,
+                confirmado = true
+            )
+        ).toInt()
+
+        val repartos = listOf(
+            RepartoDetectadoEntidad(ingresoDetectadoId = ingresoDetectadoId, fondoId = viajeId, fondoNombre = "Viaje", cantidadCentimos = 195_00),
+            RepartoDetectadoEntidad(ingresoDetectadoId = ingresoDetectadoId, fondoId = emergenciaId, fondoNombre = "Emergencia", cantidadCentimos = 100_00),
+            RepartoDetectadoEntidad(ingresoDetectadoId = ingresoDetectadoId, fondoId = sofaId, fondoNombre = "Sofa", cantidadCentimos = 125_00)
+        )
+        repartos.forEach { metaDao.aportarAFondo(it.fondoId, usuarioId, it.cantidadCentimos) }
+        repartoDetectadoDao.insertarRepartos(repartos)
     }
 
     suspend fun registrarUsuario(email: String, password: String): UsuarioEntidad? {
@@ -185,3 +368,5 @@ class RepositorioQuriRoom(
             b.toByteArray(Charsets.UTF_8)
         )
 }
+
+

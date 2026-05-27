@@ -32,7 +32,7 @@ data class IngresoEntidad(
     val usuarioId: Int = 0,
 
     // Cantidad de dinero que entra
-    val cantidad: Double,
+    val cantidadCentimos: Long,
 
     // Fecha en la que se registra el ingreso
     val fecha: String,

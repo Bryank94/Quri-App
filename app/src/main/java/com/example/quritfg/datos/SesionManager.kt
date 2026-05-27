@@ -1,6 +1,7 @@
 package com.example.quritfg.datos
 
 import android.content.Context
+import com.google.firebase.auth.FirebaseAuth
 
 /**
  * Se encarga de gestionar la sesion del usuario.
@@ -20,16 +21,19 @@ class SesionManager(context: Context) {
         private const val KEY_LOGGED_IN = "logged_in"
         private const val KEY_USER_ID = "user_id"
         private const val KEY_USER_EMAIL = "user_email"
+        private const val KEY_FIREBASE_UID = "firebase_uid"
+        private const val KEY_ONBOARDING_VISTO = "onboarding_visto"
     }
 
     /**
      * Marca la sesion como activa.
      */
-    fun guardarSesionActiva(usuarioId: Int, email: String) {
+    fun guardarSesionActiva(usuarioId: Int, email: String, firebaseUid: String? = null) {
         prefs.edit()
             .putBoolean(KEY_LOGGED_IN, true)
             .putInt(KEY_USER_ID, usuarioId)
             .putString(KEY_USER_EMAIL, email)
+            .putString(KEY_FIREBASE_UID, firebaseUid)
             .apply()
     }
 
@@ -37,6 +41,7 @@ class SesionManager(context: Context) {
      * Cierra la sesion del usuario.
      */
     fun cerrarSesion() {
+        FirebaseAuth.getInstance().signOut()
         prefs.edit().clear().apply()
     }
 
@@ -44,7 +49,11 @@ class SesionManager(context: Context) {
      * Devuelve si el usuario esta logueado o no.
      */
     fun estaLogueado(): Boolean {
-        return prefs.getBoolean(KEY_LOGGED_IN, false) && obtenerUsuarioId() != null
+        val sesionLocalValida = prefs.getBoolean(KEY_LOGGED_IN, false) && obtenerUsuarioId() != null
+        if (!sesionLocalValida) return false
+
+        val firebaseUid = prefs.getString(KEY_FIREBASE_UID, null)
+        return firebaseUid == null || FirebaseAuth.getInstance().currentUser?.uid == firebaseUid
     }
 
     fun obtenerUsuarioId(): Int? {
@@ -54,5 +63,12 @@ class SesionManager(context: Context) {
 
     fun obtenerEmailUsuario(): String? {
         return prefs.getString(KEY_USER_EMAIL, null)
+    }
+
+    fun onboardingVisto(): Boolean =
+        prefs.getBoolean(KEY_ONBOARDING_VISTO, false)
+
+    fun marcarOnboardingVisto() {
+        prefs.edit().putBoolean(KEY_ONBOARDING_VISTO, true).apply()
     }
 }

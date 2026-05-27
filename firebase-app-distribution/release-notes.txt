@@ -1,0 +1,14 @@
+Quri 0.1.3-beta
+
+Cambios principales:
+- Fase 3 ampliada: inteligencia financiera mas explicable.
+- Prediccion por fondo: Quri indica si llegas a tiempo, si vas justo o si no llegas.
+- Cada insight muestra el motivo de la recomendacion para aumentar confianza.
+- Deteccion de gastos repetidos en varios meses, util para suscripciones o gastos fijos.
+- Comparacion entre meses reforzada: gasto mensual, categorias que suben y margen disponible.
+- Alertas mas utiles en Finanzas para decidir que corregir este mes.
+
+Notas para testers:
+- Probad con gastos repetidos durante marzo, abril y mayo.
+- Cread un fondo con fecha limite cercana para ver la prediccion.
+- Revisad si el texto de "Por que" ayuda a entender la recomendacion.

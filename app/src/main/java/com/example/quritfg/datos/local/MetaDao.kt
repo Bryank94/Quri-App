@@ -1,4 +1,4 @@
-package com.example.quritfg.datos.local
+﻿package com.example.quritfg.datos.local
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -17,7 +17,7 @@ interface MetaDao {
      * Si ya existe una, la reemplaza por la nueva.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertarMeta(meta: MetaEntidad)
+    suspend fun insertarMeta(meta: MetaEntidad): Long
 
     /**
      * Devuelve la meta actual almacenada.
@@ -27,9 +27,37 @@ interface MetaDao {
     @Query("SELECT * FROM metas WHERE usuarioId = :usuarioId LIMIT 1")
     fun obtenerMeta(usuarioId: Int): Flow<MetaEntidad?>
 
+    @Query("SELECT * FROM metas WHERE usuarioId = :usuarioId ORDER BY id DESC")
+    fun obtenerFondos(usuarioId: Int): Flow<List<MetaEntidad>>
+
+    @Query("SELECT COUNT(*) FROM metas")
+    fun contarTodas(): Flow<Int>
+
+    @Query(
+        """
+        UPDATE metas
+        SET cantidadActualCentimos = cantidadActualCentimos + :cantidadCentimos
+        WHERE id = :fondoId AND usuarioId = :usuarioId
+        """
+    )
+    suspend fun aportarAFondo(fondoId: Int, usuarioId: Int, cantidadCentimos: Long)
+
+    @Query(
+        """
+        UPDATE metas
+        SET cantidadActualCentimos = MAX(cantidadActualCentimos - :cantidadCentimos, 0)
+        WHERE id = :fondoId AND usuarioId = :usuarioId
+        """
+    )
+    suspend fun restarAFondo(fondoId: Int, usuarioId: Int, cantidadCentimos: Long)
+
+    @Query("DELETE FROM metas WHERE id = :fondoId AND usuarioId = :usuarioId")
+    suspend fun eliminarFondo(fondoId: Int, usuarioId: Int)
+
     /**
      * Borra las metas guardadas.
      */
     @Query("DELETE FROM metas WHERE usuarioId = :usuarioId")
     suspend fun borrarTodas(usuarioId: Int)
 }
+
