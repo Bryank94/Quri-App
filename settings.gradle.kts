@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "QuriTFG"
 include(":app")
- 
+include(":shared")

@@ -11,7 +11,7 @@ plugins {
 
 android {
     namespace = "com.example.quritfg"
-    compileSdk = 36 // Â¡Ojo! AsegÃºrate de tener instalado el SDK 36 en Android Studio
+    compileSdk = 36 // Asegurate de tener instalado el SDK 36 en Android Studio
 
     defaultConfig {
         applicationId = "com.example.quritfg"
@@ -72,6 +72,8 @@ kapt {
 }
 
 dependencies {
+    implementation(project(":shared"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -82,10 +84,10 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
-    // ðŸ”¹ NavegaciÃ³n Compose
+    // Navegacion Compose
     implementation("androidx.navigation:navigation-compose:2.8.5")
 
-    // ðŸ”¹ ViewModel para Compose
+    // ViewModel para Compose
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
 
     implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
@@ -93,11 +95,11 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.android.gms:play-services-auth:21.4.0")
 
-    // ðŸ”¹ Room
+    // Room
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
-    // AQUÃ LA SOLUCIÃ“N: Usamos la funciÃ³n kapt con parÃ©ntesis
+    // Room compiler con kapt
     kapt("androidx.room:room-compiler:$roomVersion")
 
     testImplementation(libs.junit)
@@ -109,7 +111,3 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
-
-
-
-

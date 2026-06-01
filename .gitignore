@@ -28,3 +28,12 @@ app/google-services.json
 
 
 /dist/
+
+/shared/build/
+/iosApp/build/
+*.xcuserdata/
+DerivedData/
+
+/iosApp/iosApp/GoogleService-Info.plist
+*.ipa
+*.xcarchive

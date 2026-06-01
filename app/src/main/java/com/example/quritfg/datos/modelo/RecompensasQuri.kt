@@ -3,17 +3,20 @@ package com.example.quritfg.datos.modelo
 import com.example.quritfg.datos.local.GastoEntidad
 import com.example.quritfg.datos.local.IngresoEntidad
 import com.example.quritfg.datos.local.MetaEntidad
+import com.example.quritfg.shared.modelo.FondoAhorro
+import com.example.quritfg.shared.modelo.MovimientoFinanciero
+import com.example.quritfg.shared.recompensas.RecompensasQuriComun
 import java.time.LocalDate
 
 object RecompensasQuri {
-    const val PUNTOS_POR_LOGIN_DIARIO = 5
-    const val BONUS_RACHA_SEMANAL = 25
-    const val PUNTOS_POR_EURO_AHORRADO = 1
-    const val BONUS_META_SEMANAL = 100
-    const val BONUS_AMIGO_INVITADO = 250
-    const val PUNTOS_MINIMOS_CANJE = 1_000
-    const val CENTIMOS_POR_CANJE_MINIMO = 50L
-    const val TOPE_CANJE_MENSUAL_CENTIMOS = 500L
+    const val PUNTOS_POR_LOGIN_DIARIO = RecompensasQuriComun.PUNTOS_POR_LOGIN_DIARIO
+    const val BONUS_RACHA_SEMANAL = RecompensasQuriComun.BONUS_RACHA_SEMANAL
+    const val PUNTOS_POR_EURO_AHORRADO = RecompensasQuriComun.PUNTOS_POR_EURO_AHORRADO
+    const val BONUS_META_SEMANAL = RecompensasQuriComun.BONUS_META_SEMANAL
+    const val BONUS_AMIGO_INVITADO = RecompensasQuriComun.BONUS_AMIGO_INVITADO
+    const val PUNTOS_MINIMOS_CANJE = RecompensasQuriComun.PUNTOS_MINIMOS_CANJE
+    const val CENTIMOS_POR_CANJE_MINIMO = RecompensasQuriComun.CENTIMOS_POR_CANJE_MINIMO
+    const val TOPE_CANJE_MENSUAL_CENTIMOS = RecompensasQuriComun.TOPE_CANJE_MENSUAL_CENTIMOS
 
     fun calcularPuntos(
         ingresos: List<IngresoEntidad>,
@@ -24,33 +27,28 @@ object RecompensasQuri {
         perfilVerificado: Boolean = false,
         amigosInvitados: Int = 0,
         fechaActual: LocalDate = LocalDate.now()
-    ): Int {
-        val ahorroNetoCentimos = (
-            ingresos.sumOf { it.cantidadCentimos } - gastos.sumOf { it.cantidadCentimos }
-        ).coerceAtLeast(0L)
-        val puntosAhorro = (ahorroNetoCentimos / 100L).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
-        val metasCumplidas = fondos.count { it.cantidadObjetivoCentimos > 0 && it.cantidadActualCentimos >= it.cantidadObjetivoCentimos }
-        val metasConFechaVigente = fondos.count { fondo ->
-            runCatching { FechaQuri.parsear(fondo.fechaLimite) }
-                .getOrNull()
-                ?.let { !it.isBefore(fechaActual) }
-                ?: false
-        }
-        val bonusLogin = if (inicioDiarioRegistrado) PUNTOS_POR_LOGIN_DIARIO else 0
-        val bonusRacha = if (rachaSemanal) BONUS_RACHA_SEMANAL else 0
-        val bonusPerfil = if (perfilVerificado) 200 else 0
-        val bonusInvitaciones = amigosInvitados.coerceAtLeast(0) * BONUS_AMIGO_INVITADO
-        val bonusMetas = metasCumplidas.coerceAtMost(metasConFechaVigente) * BONUS_META_SEMANAL
+    ): Int = RecompensasQuriComun.calcularPuntos(
+        ingresos = ingresos.map { MovimientoFinanciero(it.cantidadCentimos, it.fecha, etiqueta = it.concepto.orEmpty()) },
+        gastos = gastos.map { MovimientoFinanciero(it.cantidadCentimos, it.fecha, categoria = it.categoria, etiqueta = it.etiqueta) },
+        fondos = fondos.map {
+            FondoAhorro(
+                nombre = it.nombre,
+                cantidadObjetivoCentimos = it.cantidadObjetivoCentimos,
+                cantidadActualCentimos = it.cantidadActualCentimos,
+                fechaLimite = it.fechaLimite,
+                prioridad = it.prioridad
+            )
+        },
+        inicioDiarioRegistrado = inicioDiarioRegistrado,
+        rachaSemanal = rachaSemanal,
+        perfilVerificado = perfilVerificado,
+        amigosInvitados = amigosInvitados,
+        fechaActual = fechaActual.toString()
+    )
 
-        return puntosAhorro + bonusLogin + bonusRacha + bonusPerfil + bonusInvitaciones + bonusMetas
-    }
-
-    fun centimosCanjeables(puntos: Int): Long {
-        if (puntos < PUNTOS_MINIMOS_CANJE) return 0L
-        val bloques = puntos / PUNTOS_MINIMOS_CANJE
-        return (bloques * CENTIMOS_POR_CANJE_MINIMO).coerceAtMost(TOPE_CANJE_MENSUAL_CENTIMOS)
-    }
+    fun centimosCanjeables(puntos: Int): Long =
+        RecompensasQuriComun.centimosCanjeables(puntos)
 
     fun puntosHastaCanje(puntos: Int): Int =
-        (PUNTOS_MINIMOS_CANJE - puntos).coerceAtLeast(0)
+        RecompensasQuriComun.puntosHastaCanje(puntos)
 }

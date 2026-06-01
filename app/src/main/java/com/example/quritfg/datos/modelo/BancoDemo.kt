@@ -1,8 +1,12 @@
 package com.example.quritfg.datos.modelo
 
 import com.example.quritfg.datos.local.MetaEntidad
+import com.example.quritfg.shared.banco.BancoDemoComun
+import com.example.quritfg.shared.banco.EstadoFondoBancoComun
+import com.example.quritfg.shared.banco.ReglasAutomaticasQuriComun
+import com.example.quritfg.shared.modelo.FechaQuriComun
+import com.example.quritfg.shared.modelo.FondoAhorro
 import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 
 data class IngresoBancoDetectado(
     val entidad: String,
@@ -49,104 +53,64 @@ object BancoDemo {
         hoy: LocalDate = LocalDate.now(),
         reglas: ReglasAutomaticasQuri = ReglasAutomaticasQuri()
     ): PlanBancoDemo {
-        val ingreso = IngresoBancoDetectado(
-            entidad = "Banco Quri Demo",
-            concepto = "Nomina detectada",
-            cantidadCentimos = ingresoDetectadoCentimos,
-            fecha = FechaQuri.hoyTexto()
+        val planComun = BancoDemoComun.planificarReparto(
+            fondos = fondos.map { it.aFondoAhorro() },
+            ingresoDetectadoCentimos = ingresoDetectadoCentimos,
+            hoy = hoy.aFechaQuriComun(),
+            reglas = reglas.aReglasComunes()
         )
-        val necesidades = fondos.mapNotNull { fondo -> calcularNecesidad(fondo, hoy) }
-
-        val maximoAsignable = reglas.maximoPorcentajeIngreso
-            ?.let { ingresoDetectadoCentimos * it.coerceIn(1, 100) / 100 }
-            ?: ingresoDetectadoCentimos
-        val necesidadesConReglas = aplicarReglas(necesidades, ingresoDetectadoCentimos, reglas)
-        val totalNecesario = necesidadesConReglas.sumOf { it.necesarioMensualCentimos }
-        val repartos = when {
-            necesidadesConReglas.isEmpty() -> emptyList()
-            totalNecesario <= maximoAsignable -> necesidadesConReglas.map {
-                it.copy(asignadoCentimos = it.necesarioMensualCentimos)
-            }
-            else -> repartirPorPrioridad(necesidadesConReglas, maximoAsignable, reglas.priorizarMetasUrgentes)
-        }
-
-        val totalAsignado = repartos.sumOf { it.asignadoCentimos }
         return PlanBancoDemo(
-            ingreso = ingreso,
-            repartos = repartos,
-            totalAsignadoCentimos = totalAsignado,
-            restanteDisponibleCentimos = (ingresoDetectadoCentimos - totalAsignado).coerceAtLeast(0L)
+            ingreso = IngresoBancoDetectado(
+                entidad = planComun.ingreso.entidad,
+                concepto = planComun.ingreso.concepto,
+                cantidadCentimos = planComun.ingreso.cantidadCentimos,
+                fecha = planComun.ingreso.fecha,
+                esDemo = planComun.ingreso.esDemo
+            ),
+            repartos = planComun.repartos.map { repartoComun ->
+                RepartoFondoBanco(
+                    fondo = fondos.encontrarFondo(repartoComun.fondo),
+                    mesesRestantes = repartoComun.mesesRestantes,
+                    necesarioMensualCentimos = repartoComun.necesarioMensualCentimos,
+                    asignadoCentimos = repartoComun.asignadoCentimos,
+                    estado = repartoComun.estado.aEstadoAndroid()
+                )
+            },
+            totalAsignadoCentimos = planComun.totalAsignadoCentimos,
+            restanteDisponibleCentimos = planComun.restanteDisponibleCentimos
         )
     }
 
-    private fun calcularNecesidad(fondo: MetaEntidad, hoy: LocalDate): RepartoFondoBanco? {
-        val restante = (fondo.cantidadObjetivoCentimos - fondo.cantidadActualCentimos).coerceAtLeast(0L)
-        if (restante == 0L) {
-            return RepartoFondoBanco(
-                fondo = fondo,
-                mesesRestantes = 0L,
-                necesarioMensualCentimos = 0L,
-                asignadoCentimos = 0L,
-                estado = EstadoFondoBanco.COMPLETADO
-            )
-        }
-
-        val fechaLimite = runCatching { FechaQuri.parsear(fondo.fechaLimite) }.getOrDefault(hoy)
-        val fechaVencida = fechaLimite.isBefore(hoy)
-        val mesesRestantes = ChronoUnit.MONTHS.between(hoy.withDayOfMonth(1), fechaLimite.withDayOfMonth(1))
-            .coerceAtLeast(1L)
-        val necesarioMensual = dividirRedondeandoArriba(restante, mesesRestantes)
-
-        return RepartoFondoBanco(
-            fondo = fondo,
-            mesesRestantes = mesesRestantes,
-            necesarioMensualCentimos = necesarioMensual,
-            asignadoCentimos = 0L,
-            estado = if (fechaVencida) EstadoFondoBanco.VAS_TARDE else EstadoFondoBanco.VAS_BIEN
+    private fun MetaEntidad.aFondoAhorro(): FondoAhorro =
+        FondoAhorro(
+            id = id,
+            nombre = nombre,
+            cantidadObjetivoCentimos = cantidadObjetivoCentimos,
+            cantidadActualCentimos = cantidadActualCentimos,
+            fechaLimite = fechaLimite,
+            prioridad = prioridad
         )
-    }
 
-    private fun repartirPorPrioridad(
-        necesidades: List<RepartoFondoBanco>,
-        ingresoCentimos: Long,
-        priorizarUrgentes: Boolean
-    ): List<RepartoFondoBanco> {
-        var restante = ingresoCentimos
-        val comparador = if (priorizarUrgentes) {
-            compareBy<RepartoFondoBanco> { it.mesesRestantes }.thenBy { it.fondo.prioridad }
-        } else {
-            compareBy<RepartoFondoBanco> { it.fondo.prioridad }.thenBy { it.fondo.fechaLimite }
-        }
-        return necesidades
-            .sortedWith(comparador)
-            .map { necesidad ->
-                val asignado = necesidad.necesarioMensualCentimos.coerceAtMost(restante)
-                restante -= asignado
-                necesidad.copy(asignadoCentimos = asignado)
-            }
-            .sortedByDescending { it.fondo.id }
+    private fun ReglasAutomaticasQuri.aReglasComunes(): ReglasAutomaticasQuriComun =
+        ReglasAutomaticasQuriComun(
+            porcentajesPorNombre = porcentajesPorNombre,
+            minimosPorNombreCentimos = minimosPorNombreCentimos,
+            maximoPorcentajeIngreso = maximoPorcentajeIngreso,
+            priorizarMetasUrgentes = priorizarMetasUrgentes
+        )
+
+    private fun LocalDate.aFechaQuriComun(): FechaQuriComun =
+        FechaQuriComun(year = year, month = monthValue, day = dayOfMonth)
+
+    private fun EstadoFondoBancoComun.aEstadoAndroid(): EstadoFondoBanco =
+        when (this) {
+            EstadoFondoBancoComun.VAS_BIEN -> EstadoFondoBanco.VAS_BIEN
+            EstadoFondoBancoComun.VAS_TARDE -> EstadoFondoBanco.VAS_TARDE
+            EstadoFondoBancoComun.COMPLETADO -> EstadoFondoBanco.COMPLETADO
         }
 
-    private fun aplicarReglas(
-        necesidades: List<RepartoFondoBanco>,
-        ingresoCentimos: Long,
-        reglas: ReglasAutomaticasQuri
-    ): List<RepartoFondoBanco> =
-        necesidades.map { reparto ->
-            val nombre = reparto.fondo.nombre.lowercase()
-            val porcentaje = reglas.porcentajesPorNombre
-                .firstNotNullOfOrNull { (clave, valor) -> valor.takeIf { nombre.contains(clave.lowercase()) } }
-            val minimo = reglas.minimosPorNombreCentimos
-                .firstNotNullOfOrNull { (clave, valor) -> valor.takeIf { nombre.contains(clave.lowercase()) } }
-            val sugerenciaPorcentaje = porcentaje?.let { ingresoCentimos * it.coerceIn(0, 100) / 100 }
-            val sugerencia = listOfNotNull(
-                reparto.necesarioMensualCentimos,
-                sugerenciaPorcentaje,
-                minimo
-            ).maxOrNull() ?: reparto.necesarioMensualCentimos
-            reparto.copy(necesarioMensualCentimos = sugerencia)
-        }
-
-    private fun dividirRedondeandoArriba(cantidad: Long, divisor: Long): Long =
-        (cantidad + divisor - 1L) / divisor
+    private fun List<MetaEntidad>.encontrarFondo(fondo: FondoAhorro): MetaEntidad =
+        firstOrNull { it.id == fondo.id && it.nombre == fondo.nombre }
+            ?: firstOrNull { it.id == fondo.id }
+            ?: first { it.nombre == fondo.nombre }
 }

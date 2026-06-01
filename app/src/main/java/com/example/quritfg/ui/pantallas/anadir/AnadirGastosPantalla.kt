@@ -1,4 +1,4 @@
-﻿package com.example.quritfg.ui.pantallas.anadir
+package com.example.quritfg.ui.pantallas.anadir
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -75,9 +75,7 @@ fun AnadirGastoPantalla(navController: NavController) {
     }
 
     var expandido by remember { mutableStateOf(false) }
-    var expandidoFondoDistribucion by remember { mutableStateOf(false) }
     val fondos by vm.fondos.collectAsState(initial = emptyList())
-    val fondoSeleccionado = fondos.firstOrNull { it.id == vm.fondoDistribucionSeleccionadoId }
     val fondosDisponibles = fondos.filter { fondo ->
         !vm.aportacionesFondos.containsKey(fondo.id) || fondo.id == vm.fondoDistribucionSeleccionadoId
     }
@@ -221,44 +219,40 @@ fun AnadirGastoPantalla(navController: NavController) {
                 ) {
                     Text(quriTexto("Distribuir automaticamente cada mes", "Distribute automatically every month"))
                 }
-                ExposedDropdownMenuBox(
-                    expanded = expandidoFondoDistribucion,
-                    onExpandedChange = { expandidoFondoDistribucion = !expandidoFondoDistribucion }
-                ) {
-                    OutlinedTextField(
-                        value = fondoSeleccionado?.nombre ?: quriTexto("Selecciona un fondo", "Select a fund"),
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text(quriTexto("Fondo", "Fund")) },
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandidoFondoDistribucion)
-                        },
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth(),
-                        shape = RoundedCornerShape(18.dp),
-                        colors = coloresCampoOscuro()
-                    )
+                Text(
+                    text = quriTexto("Elige el fondo a reforzar", "Choose the fund to reinforce"),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Color.White.copy(alpha = 0.90f)
+                )
 
-                    ExposedDropdownMenu(
-                        expanded = expandidoFondoDistribucion,
-                        onDismissRequest = { expandidoFondoDistribucion = false },
-                        containerColor = Color(0xCC04160D),
-                        tonalElevation = 0.dp,
-                        shadowElevation = 0.dp
-                    ) {
+                if (fondosDisponibles.isEmpty()) {
+                    Text(
+                        text = quriTexto(
+                            "Todos los fondos ya tienen una cantidad asignada. Quita uno si quieres cambiarlo.",
+                            "Every fund already has an assigned amount. Remove one if you want to change it."
+                        ),
+                        color = Color.White.copy(alpha = 0.78f),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         fondosDisponibles.forEach { fondo ->
-                            DropdownMenuItem(
-                                text = { Text(fondo.nombre, color = Color.White) },
-                                onClick = {
-                                    vm.onFondoDistribucionChange(fondo.id)
-                                    expandidoFondoDistribucion = false
+                            val seleccionado = fondo.id == vm.fondoDistribucionSeleccionadoId
+                            FilterChip(
+                                selected = seleccionado,
+                                onClick = { vm.onFondoDistribucionChange(fondo.id) },
+                                label = {
+                                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                        Text(fondo.nombre)
+                                        Text(
+                                            text = "${formatearDineroQuri(fondo.cantidadActualCentimos)} / ${formatearDineroQuri(fondo.cantidadObjetivoCentimos)}",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
                                 },
-                                colors = MenuDefaults.itemColors(
-                                    textColor = Color.White,
-                                    leadingIconColor = DoradoDinero,
-                                    trailingIconColor = DoradoDinero
-                                )
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = chipDorado(seleccionado),
+                                border = BorderStroke(1.dp, if (seleccionado) DoradoDinero else DoradoDinero.copy(alpha = 0.65f))
                             )
                         }
                     }

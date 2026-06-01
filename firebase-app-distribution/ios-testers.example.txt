@@ -1,0 +1,3 @@
+# Un email por linea o separados por comas.
+# No incluyas emails reales si vas a publicar el repositorio.
+tester-ios@example.com
