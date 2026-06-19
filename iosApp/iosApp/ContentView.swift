@@ -181,7 +181,7 @@ private struct TopBar: View {
     var body: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Hola, \(userName) · Nivel \(level)")
+                Text("Hola, \(userName) - Nivel \(level)")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.white.opacity(0.82))
 
@@ -194,7 +194,7 @@ private struct TopBar: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(advice.title)
                             .font(.caption.weight(.bold))
-                            .foregroundStyle(.quriGold)
+                            .foregroundStyle(Color.quriGold)
                         Text(advice.detail)
                             .font(.caption2)
                             .foregroundStyle(.white)
@@ -205,7 +205,7 @@ private struct TopBar: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
                     .background(.black.opacity(0.25), in: RoundedRectangle(cornerRadius: 14))
-                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(.quriGold.opacity(0.75), lineWidth: 1))
+                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.quriGold.opacity(0.75), lineWidth: 1))
                 }
                 .buttonStyle(.plain)
             }
@@ -216,8 +216,8 @@ private struct TopBar: View {
                     .scaledToFit()
                     .frame(width: 50, height: 50)
                     .clipShape(Circle())
-                    .overlay(Circle().stroke(.quriGold, lineWidth: 1.5))
-                    .shadow(color: .quriGold.opacity(0.45), radius: 10)
+                    .overlay(Circle().stroke(Color.quriGold, lineWidth: 1.5))
+                    .shadow(color: Color.quriGold.opacity(0.45), radius: 10)
             }
             .accessibilityLabel("Abrir perfil")
         }
@@ -233,7 +233,7 @@ private struct BottomBar: View {
                 Button { tab = item } label: {
                     Image(systemName: item.icon)
                         .font(.system(size: tab == item ? 25 : 22, weight: .semibold))
-                        .foregroundStyle(tab == item ? .quriGold : .white.opacity(0.7))
+                        .foregroundStyle(tab == item ? Color.quriGold : .white.opacity(0.7))
                         .frame(maxWidth: .infinity)
                         .frame(height: 44)
                 }
@@ -244,7 +244,7 @@ private struct BottomBar: View {
         .padding(.horizontal, 8)
         .padding(.vertical, 8)
         .background(.black.opacity(0.36), in: Capsule())
-        .overlay(Capsule().stroke(.quriGold.opacity(0.35), lineWidth: 1))
+        .overlay(Capsule().stroke(Color.quriGold.opacity(0.35), lineWidth: 1))
     }
 }
 
@@ -258,7 +258,7 @@ private struct InicioView: View {
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                 Metric(title: "Ingresos", value: summary.income, color: .green, icon: "arrow.down.left")
                 Metric(title: "Gastos", value: summary.expense, color: .red, icon: "arrow.up.right")
-                Metric(title: "Ahorrado", value: summary.saved, color: .quriGold, icon: "banknote")
+                Metric(title: "Ahorrado", value: summary.saved, color: Color.quriGold, icon: "banknote")
                 Metric(title: "Objetivo", value: summary.target, color: .cyan, icon: "target")
             }
             SummaryCard(summary: summary)
@@ -364,7 +364,7 @@ private struct FundsView: View {
                         .font(.title3.weight(.bold))
                         .foregroundStyle(.black)
                         .frame(width: 42, height: 42)
-                        .background(.quriGold, in: Circle())
+                        .background(Color.quriGold, in: Circle())
                 }
             }
             .foregroundStyle(.white)
@@ -381,7 +381,7 @@ private struct FundsView: View {
                                     .foregroundStyle(.green)
                             }
                         }
-                        ProgressView(value: fund.progress).tint(fund.completed ? .green : .quriGold)
+                        ProgressView(value: fund.progress).tint(fund.completed ? .green : Color.quriGold)
                         HStack {
                             Text(fund.saved, format: .currency(code: "EUR"))
                             Spacer()
@@ -426,7 +426,7 @@ private struct FinanceView: View {
             Card {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Reparto seguro").font(.headline)
-                    Row("Total repartido", summary.saved, .quriGold)
+                    Row("Total repartido", summary.saved, Color.quriGold)
                     Row("Disponible restante", summary.balance, summary.balance >= 0 ? .green : .red)
                     Text(summary.advice.detail)
                         .font(.subheadline)
@@ -446,7 +446,7 @@ private struct FinanceView: View {
                                     .foregroundStyle(fund.completed ? .green : .white.opacity(0.7))
                             }
                             Spacer()
-                            Text("\(Int(fund.progress * 100))%").foregroundStyle(.quriGold)
+                            Text("\(Int(fund.progress * 100))%").foregroundStyle(Color.quriGold)
                         }
                     }
                 }
@@ -493,7 +493,7 @@ private struct AnalysisView: View {
                     Ring(progress: max(0, 1 - summary.unnecessary / max(summary.expense, 1)), color: .green, text: "Salud")
                         .frame(height: 145)
                     Text("Gasto no necesario: \(summary.unnecessary, format: .currency(code: "EUR"))")
-                        .foregroundStyle(.quriGold)
+                        .foregroundStyle(Color.quriGold)
                 }
             }
         }
@@ -508,7 +508,7 @@ private struct ProfileSheet: View {
         ZStack {
             Color.quriDeepGreen.ignoresSafeArea()
             VStack(alignment: .leading, spacing: 18) {
-                Text("Perfil").font(.title.bold()).foregroundStyle(.quriGold)
+                Text("Perfil").font(.title.bold()).foregroundStyle(Color.quriGold)
                 TextField("Nombre", text: $userName).textFieldStyle(.roundedBorder)
                 Text("Nivel \(summary.level)").font(.headline).foregroundStyle(.white)
                 ProgressView(value: summary.levelProgress).tint(.green)
@@ -531,10 +531,10 @@ private struct BigBalance: View {
                     Spacer()
                     Text("Este mes")
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(.quriGold)
+                        .foregroundStyle(Color.quriGold)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .overlay(Capsule().stroke(.quriGold.opacity(0.75), lineWidth: 1))
+                        .overlay(Capsule().stroke(Color.quriGold.opacity(0.75), lineWidth: 1))
                 }
                 Text(summary.balance, format: .currency(code: "EUR"))
                     .font(.system(size: 42, weight: .black, design: .rounded))
@@ -573,7 +573,7 @@ private struct SummaryCard: View {
                 VStack(alignment: .leading, spacing: 7) {
                     Text("Fondos de ahorro").font(.headline)
                     Text("Activos: \(summary.active.count)")
-                    Text("Completados: \(summary.completed)").foregroundStyle(.quriGold)
+                    Text("Completados: \(summary.completed)").foregroundStyle(Color.quriGold)
                     Text("Ahorrado: \(summary.saved, format: .currency(code: "EUR"))")
                 }
                 Spacer()
@@ -591,14 +591,14 @@ private struct FundsPreview: View {
         Card {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Fondos activos").font(.headline)
-                ForEach(funds.prefix(3)) { fund in
+                ForEach(Array(funds.prefix(3))) { fund in
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
                             Text(fund.name)
                             Spacer()
-                            Text(fund.saved, format: .currency(code: "EUR")).foregroundStyle(.quriGold)
+                            Text(fund.saved, format: .currency(code: "EUR")).foregroundStyle(Color.quriGold)
                         }
-                        ProgressView(value: fund.progress).tint(fund.completed ? .green : .quriGold)
+                        ProgressView(value: fund.progress).tint(fund.completed ? .green : Color.quriGold)
                     }
                 }
             }
@@ -636,7 +636,7 @@ private struct Card<Content: View>: View {
             .padding(16)
             .foregroundStyle(.white)
             .background(.black.opacity(0.22), in: RoundedRectangle(cornerRadius: 18))
-            .overlay(RoundedRectangle(cornerRadius: 18).stroke(.quriGold.opacity(0.7), lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.quriGold.opacity(0.7), lineWidth: 1))
     }
 }
 
@@ -650,7 +650,7 @@ private struct Field: View {
             .keyboardType(keyboard)
             .padding(14)
             .background(.black.opacity(0.18), in: RoundedRectangle(cornerRadius: 14))
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(.quriGold, lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.quriGold, lineWidth: 1))
             .foregroundStyle(.white)
     }
 }
@@ -703,7 +703,7 @@ private struct Ring: View {
 
 private struct Donut: View {
     let values: [Double]
-    private let colors: [Color] = [.green, .quriGold, .red, .cyan, .purple]
+    private let colors: [Color] = [.green, Color.quriGold, .red, .cyan, .purple]
 
     var body: some View {
         GeometryReader { proxy in
@@ -734,3 +734,4 @@ private extension Color {
 #Preview {
     ContentView()
 }
+
